@@ -60,11 +60,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {isUsingMock && (
+      {/* {isUsingMock && (
         <p style={{ ...mono, marginBottom: 20, fontSize: 12, color: '#d97706' }}>
           ⚠ Backend non raggiungibile: dati mock
         </p>
-      )}
+      )} */}
 
       {/* KPI row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, marginBottom: 18 }}>
