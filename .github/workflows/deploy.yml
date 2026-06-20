@@ -269,7 +269,7 @@ jobs:
   # ─────────────────────────────────────────────────────────────────
   double-check:
     name: Double-Check Wire-up
-    needs: [deploy-api, deploy-frontend]
+    needs: [terraform, deploy-api, deploy-frontend]
     runs-on: ubuntu-latest
     environment: production
     steps:
