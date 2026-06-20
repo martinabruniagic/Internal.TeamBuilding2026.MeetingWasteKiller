@@ -66,7 +66,7 @@ export default function Sidebar() {
           </svg>
         </div>
         <div style={{ lineHeight: 1.1 }}>
-          <div style={{ ...heading, fontWeight: 700, fontSize: 14, color: '#eef2f6' }}>WasteKiller</div>
+          <div style={{ ...heading, fontWeight: 700, fontSize: 14, color: '#eef2f6' }}>Meeting Waste Killer</div>
           <div style={{ ...mono, fontSize: 9.5, letterSpacing: '0.12em', color: '#5a6472', textTransform: 'uppercase' }}>
             PoC v1.1
           </div>
