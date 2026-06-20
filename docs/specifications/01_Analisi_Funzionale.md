@@ -148,13 +148,13 @@ MWK non richiede nessun inserimento manuale: si connette al calendario aziendale
 
 ## ✅ In scope (versione PoC – 4h)
 
-- Lettura meeting da dataset mock (simulazione calendar sync)
-- Analisi pre-meeting automatica su dati mock
-- Valutazione post-meeting (decisioni, action item)
-- Calcolo score e costi
-- Dashboard KPI base
-- Lista meeting con badge
-- Optimization Engine **rule-based**
+- Lettura meeting da **dataset seed statico** (simulazione calendar sync, nessun inserimento manuale)
+- **WasteScore hardcodato** nel seed (nessun calcolo algoritmico, no engine)
+- **Autenticazione JWT mock** con utenti hardcodati (no Entra ID)
+- **4 endpoint read-only**: `POST /auth/login`, `GET /meetings`, `GET /meetings/{id}`, `GET /dashboard`
+- Dashboard KPI base (spreco totale, avg score, % meeting sotto soglia, alert count)
+- Lista meeting con badge WasteScore e filtri (`isFuture`, `onlyAlerts`)
+- Dettaglio meeting con partecipanti, allegati con URL mock e `estimatedCost` calcolato
 
 ## ❌ Out of scope (v1)
 
@@ -290,16 +290,19 @@ graph LR
 **Formula:**
 
 ```
-UsefulnessScore = Σ (criterioValidato × peso)    Range: 0–100
-Cost            = (Duration / 60) × Σ HourlyRate_partecipante
-WastedCost      = Cost × (1 - Score / 100)
+EfficacyScore (PostScore) = Σ (criterioValidato × peso)    Range: 0–100
+WasteScore                = 100 - EfficacyScore             Range: 0–100 (alto = più spreco)
+Cost                      = SUM(DailyCost_partecipante / 8 × (DurationMinutes / 60))
+WastedCost                = Cost × (WasteScore / 100)
 ```
 
-| Score | Etichetta |
-|---|---|
-| 70–100 | 🟢 Utile |
-| 40–69 | 🟠 Migliorabile |
-| 0–39 | 🔴 Inutile |
+> **Nota:** `WasteScore` è il valore persistito in DB e mostrato in UI (coerente con le architetture PoC ed Enterprise). Un valore alto indica **maggiore spreco**; è la metrica su cui si basa `IsAlert` (soglia 60). In Enterprise, `WasteScore` è calcolato direttamente da Azure AI Foundry invece che con la formula rule-based.
+
+| WasteScore | EfficacyScore | Etichetta |
+|---|---|---|
+| 0–39 | 61–100 | 🟢 Meeting utile |
+| 40–69 | 31–60 | 🟠 Spreco medio |
+| 70–100 | 0–30 | 🔴 Alto spreco (IsAlert se > 60) |
 
 ## 7.2 Criteri PRE-meeting
 
@@ -337,14 +340,16 @@ PreMeetingScore = Σ (criterioValidato × peso)    Range: 0–100
 
 ## 7.4 Tabella costi orari (configurabile da Admin)
 
-| Ruolo | €/h (default) |
-|---|---|
-| Junior | 30 |
-| Mid | 50 |
-| Senior | 75 |
-| Manager | 100 |
-| Director | 150 |
-| C-Level | 250 |
+| Ruolo | €/h (default) | DailyCost (8h, default) |
+|---|---|---|
+| Junior | 30 | 240 |
+| Mid | 50 | 400 |
+| Senior | 75 | 600 |
+| Manager | 100 | 800 |
+| Director | 150 | 1.200 |
+| C-Level | 250 | 2.000 |
+
+> **Nota:** Il sistema persiste `DailyCost` (costo giornaliero, 8h) per utente — coerente con il modello dati delle architetture PoC ed Enterprise. Il costo orario si ricava come `DailyCost / 8`.
 
 ---
 
@@ -514,71 +519,84 @@ graph TB
 ```mermaid
 erDiagram
   MEETING {
-    int id PK
-    string teams_event_id
+    guid id PK
+    string graph_event_id
     string title
     string agenda
-    int duration_planned
-    int duration_actual
+    string summary
+    int duration_minutes
+    int duration_actual_minutes
     string meeting_type
-    int pre_score
-    string pre_label
-    int post_score
-    string post_label
-    float estimated_cost
-    float actual_cost
-    float wasted_cost
+    decimal waste_score
+    string waste_reason
+    bool is_future
+    bool is_alert
+    decimal estimated_cost
+    decimal actual_cost
+    decimal wasted_cost
     string status
     string report_url
     datetime calendar_synced_at
     datetime created_at
-    int owner_id FK
+    guid owner_id FK
   }
   USER {
-    int id PK
+    guid id PK
+    string graph_id
     string name
     string email
     string role
-    float hourly_rate
+    decimal daily_cost
     string team
-    string app_role
   }
   PARTICIPANT {
-    int id PK
-    int meeting_id FK
-    int user_id FK
+    guid meeting_id FK
+    guid user_id FK
     bool contributed
   }
   ACTION_ITEM {
-    int id PK
-    int meeting_id FK
-    int owner_id FK
+    guid id PK
+    guid meeting_id FK
+    guid owner_id FK
     string description
     string status
     datetime due_date
   }
   DECISION {
-    int id PK
-    int meeting_id FK
+    guid id PK
+    guid meeting_id FK
     string description
     datetime decided_at
   }
   SUGGESTION {
-    int id PK
-    int meeting_id FK
+    guid id PK
+    guid meeting_id FK
     string type
     string message
     bool applied
     string phase
   }
+  MEETING_EMBEDDING {
+    guid meeting_id PK
+    float_array vector
+  }
   MEETING ||--o{ PARTICIPANT : "coinvolge"
   MEETING ||--o{ ACTION_ITEM : "genera"
   MEETING ||--o{ DECISION : "registra"
   MEETING ||--o{ SUGGESTION : "riceve"
+  MEETING ||--o| MEETING_EMBEDDING : "ha embedding (Enterprise)"
   USER ||--o{ PARTICIPANT : "partecipa"
   USER ||--o{ ACTION_ITEM : "possiede"
   USER ||--o{ MEETING : "organizza"
 ```
+
+> **Note allineamento architetture:**
+> - `graph_event_id` = `GraphEventId` dell'Enterprise arch (ID evento Outlook/Teams da Graph API)
+> - `graph_id` su USER = OID Azure AD (Enterprise); assente in PoC
+> - `waste_score` = metrica primaria persistita (alto = più spreco); in PoC hardcodato nel seed, in Enterprise calcolato da Azure AI Foundry
+> - `daily_cost` su USER = costo giornaliero (8h); formula estimatedCost: `SUM(DailyCost/8 × (DurationMinutes/60))`
+> - `MEETING_EMBEDDING` è entità Enterprise only (pgvector su PostgreSQL)
+> - `ACTION_ITEM`, `DECISION`, `SUGGESTION` sono funzionalità Enterprise v1.0 (non presenti nel PoC read-only)
 
 ---
 
@@ -659,14 +677,14 @@ sequenceDiagram
   API->>U: Notifica post-meeting (in-app + email)
   U->>FE: Compila valutazione post
   FE->>API: PUT /meetings/{id}/evaluate
-  API->>ENG: Calcola PostScore + WastedCost
+  API->>ENG: Calcola PostScore + WastedCost (EfficacyScore → WasteScore = 100 - EfficacyScore)
   ENG-->>API: Score + costi + dati report
   API->>DB: Aggiorna meeting
   API->>U: Invia report PDF via email ai partecipanti
   FE->>U: Badge post-meeting + costo sprecato
 
   M->>FE: Apre dashboard KPI
-  FE->>API: GET /stats
+  FE->>API: GET /dashboard
   API->>DB: Query aggregati team
   FE->>M: Dashboard con trend e sprechi evitati vs reali
 ```
@@ -685,7 +703,7 @@ sequenceDiagram
 
 ### v1.5
 
-- AI generativa: analisi semantica agenda e suggerimenti avanzati (Azure OpenAI)
+- AI generativa: analisi semantica agenda e suggerimenti avanzati (Azure AI Foundry — estende il modello già usato in Enterprise v1.0)
 - Trascrizione automatica meeting Teams + estrazione action item
 - Mobile responsive avanzato (PWA)
 - Integrazione ADO: action item creati automaticamente come Work Item
@@ -704,9 +722,10 @@ sequenceDiagram
 | Termine | Definizione |
 |---|---|
 | **MWK** | Meeting Waste Killer |
-| **PreScore** | Punteggio analisi preventiva (0–100) |
-| **PostScore** | Punteggio efficacia post-meeting (0–100) |
-| **WastedCost** | Costo economico associato all'inefficacia del meeting |
+| **WasteScore** | Punteggio di spreco (0–100, alto = più spreco). In PoC hardcodato nel seed; in Enterprise calcolato da Azure AI Foundry. Valore persistito in DB; `IsAlert` si attiva se `WasteScore > 60` |
+| **EfficacyScore (PostScore)** | Punteggio di efficacia post-meeting (0–100, alto = più utile), derivato dai 5 criteri rule-based. Relazione: `WasteScore = 100 − EfficacyScore` |
+| **PreScore** | Punteggio analisi preventiva pre-meeting (0–100). Segue la stessa scala di WasteScore (alto = meeting rischioso) |
+| **WastedCost** | Costo economico associato all'inefficacia del meeting: `Cost × (WasteScore / 100)` |
 | **Optimization Engine** | Modulo di analisi predittiva pre/post meeting |
 | **Action Item** | Azione concreta con owner e scadenza uscita dal meeting |
 | **Dual-Engine** | Approccio unico MWK: engine separati per pre e post meeting |
