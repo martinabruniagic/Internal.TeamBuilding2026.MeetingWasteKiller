@@ -42,18 +42,18 @@ export default function MeetingsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-800">Meeting</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground">Meeting</h1>
 
       <div className="mb-4 flex flex-wrap items-center gap-4">
-        <div className="flex overflow-hidden rounded-lg border border-gray-200">
+        <div className="flex overflow-hidden rounded-lg border border-border">
           {filterButtons.map((btn) => (
             <button
               key={btn.value}
               onClick={() => setFilterType(btn.value)}
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 filterType === btn.value
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-background text-muted-foreground hover:bg-muted'
               }`}
             >
               {btn.label}
@@ -61,7 +61,7 @@ export default function MeetingsPage() {
           ))}
         </div>
 
-        <label className="cursor-pointer flex items-center gap-2 text-sm text-gray-700">
+        <label className="cursor-pointer flex items-center gap-2 text-sm text-foreground">
           <input
             type="checkbox"
             checked={onlyAlerts}
@@ -72,15 +72,15 @@ export default function MeetingsPage() {
         </label>
 
         {!loading && (
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+            <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
             {meetings.length} meeting trovati
           </span>
         )}
       </div>
 
-      {loading && <p className="text-gray-500">Caricamento...</p>}
-      {!loading && isUsingMock && <p className="mb-3 text-amber-700">{error}</p>}
-      {!loading && !isUsingMock && error && <p className="text-red-600">{error}</p>}
+      {loading && <p className="text-muted-foreground">Caricamento...</p>}
+      {!loading && isUsingMock && <p className="mb-3 text-sm text-amber-500">{error}</p>}
+      {!loading && !isUsingMock && error && <p className="text-destructive">{error}</p>}
       {!loading && <MeetingList meetings={meetings} />}
     </div>
   );

@@ -23,13 +23,13 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="text-gray-500">Caricamento...</p>;
+  if (loading) return <p className="text-muted-foreground">Caricamento...</p>;
   if (!kpis) return null;
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-800">Dashboard</h1>
-      {isUsingMock && <p className="mb-4 text-amber-700">{error}</p>}
+      <h1 className="mb-6 text-2xl font-bold text-foreground">Dashboard</h1>
+      {isUsingMock && <p className="mb-4 text-sm text-amber-500">{error}</p>}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
         <KpiCard title="Meeting totali" value={kpis.totalMeetings} />
         <KpiCard title="Waste Score medio" value={kpis.avgWasteScore.toFixed(1)} />

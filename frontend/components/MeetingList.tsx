@@ -11,13 +11,13 @@ export default function MeetingList({ meetings }: Props) {
   const router = useRouter();
 
   if (meetings.length === 0) {
-    return <p className="text-gray-500 text-sm">Nessun meeting trovato.</p>;
+    return <p className="text-muted-foreground text-sm">Nessun meeting trovato.</p>;
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200">
+    <div className="overflow-x-auto rounded-xl border border-border bg-card">
       <table className="w-full text-sm">
-        <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+        <thead className="bg-muted text-left text-xs font-semibold uppercase text-muted-foreground">
           <tr>
             <th className="px-4 py-3">Titolo</th>
             <th className="px-4 py-3">Data</th>
@@ -32,15 +32,15 @@ export default function MeetingList({ meetings }: Props) {
             <tr
               key={m.id}
               onClick={() => router.push(`/meetings/${m.id}`)}
-              className={`cursor-pointer border-t border-gray-100 hover:bg-gray-50 ${m.isAlert ? 'bg-red-50' : ''}`}
+              className={`cursor-pointer border-t border-border/50 transition-colors hover:bg-muted/60 ${m.isAlert ? 'bg-red-500/10 dark:bg-red-500/20' : ''}`}
             >
-              <td className="px-4 py-3 font-medium text-gray-800">{m.title}</td>
-              <td className="px-4 py-3 text-gray-600">{new Date(m.date).toLocaleDateString('it-IT')}</td>
-              <td className="px-4 py-3 text-gray-600">{m.durationMinutes} min</td>
-              <td className="px-4 py-3 text-gray-600">{m.participantCount}</td>
+              <td className="px-4 py-3 font-medium text-foreground">{m.title}</td>
+              <td className="px-4 py-3 text-muted-foreground">{new Date(m.date).toLocaleDateString('it-IT')}</td>
+              <td className="px-4 py-3 text-muted-foreground">{m.durationMinutes} min</td>
+              <td className="px-4 py-3 text-muted-foreground">{m.participantCount}</td>
               <td className="px-4 py-3"><ScoreBadge score={m.wasteScore} /></td>
               <td className="px-4 py-3">
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${m.isFuture ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${m.isFuture ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400' : 'bg-muted text-muted-foreground'}`}>
                   {m.isFuture ? 'Futuro' : 'Passato'}
                 </span>
               </td>

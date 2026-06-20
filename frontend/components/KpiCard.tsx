@@ -7,10 +7,20 @@ interface Props {
 
 export default function KpiCard({ title, value, description, highlight }: Props) {
   return (
-    <div className={`rounded-xl border p-4 shadow-sm ${highlight ? 'border-red-500' : 'border-gray-200'}`}>
-      <p className="text-sm text-gray-500">{title}</p>
-      <p className="mt-1 text-2xl font-bold">{value}</p>
-      {description && <p className="mt-1 text-xs text-gray-400">{description}</p>}
+    <div
+      className={`rounded-xl border bg-card p-5 shadow-sm transition-colors ${
+        highlight ? 'border-red-500/70' : 'border-border'
+      }`}
+    >
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{title}</p>
+      <p
+        className={`mt-2 text-3xl font-bold tabular-nums ${
+          highlight ? 'text-red-500' : 'text-card-foreground'
+        }`}
+      >
+        {value}
+      </p>
+      {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
     </div>
   );
 }
