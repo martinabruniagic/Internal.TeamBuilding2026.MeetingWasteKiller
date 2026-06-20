@@ -7,7 +7,7 @@ namespace Internal.MeetingWasteKiller.Api.Controllers;
 [ApiController]
 [Route("[controller]")]
 [Authorize]
-public sealed class DashboardController(DashboardService dashboardService) : ControllerBase
+public sealed class DashboardController(IDashboardService dashboardService) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType<DashboardDto>(StatusCodes.Status200OK)]

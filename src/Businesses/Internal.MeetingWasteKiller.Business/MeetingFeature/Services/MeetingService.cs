@@ -6,7 +6,7 @@ namespace Internal.MeetingWasteKiller.Business.MeetingFeature;
 
 public sealed class MeetingService(
     IMeetingRepository repository,
-    IOptions<WasteScoreOptions> wasteOptions)
+    IOptions<WasteScoreOptions> wasteOptions) : IMeetingService
 {
     private readonly WasteScoreOptions _wasteOptions = wasteOptions.Value;
 

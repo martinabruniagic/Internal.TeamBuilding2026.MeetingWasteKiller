@@ -33,8 +33,7 @@ public sealed class MeetingServiceTests
             Summary = "Summary",
             WasteScore = wasteScore,
             WasteReason = "Waste reason",
-            IsAlert = expectedIsAlert,
-            IsFuture = false
+            IsAlert = expectedIsAlert
         };
 
         repository
@@ -77,7 +76,6 @@ public sealed class MeetingServiceTests
             WasteScore = 50,
             WasteReason = "No reason",
             IsAlert = false,
-            IsFuture = false,
             Participants =
             [
                 new MeetingParticipant { MeetingId = meetingId, UserId = user1.Id, User = user1 },

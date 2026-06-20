@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Internal.MeetingWasteKiller.SqlServer;
 
-public sealed class MeetingWasteKillerDbContext(DbContextOptions<MeetingWasteKillerDbContext> options)
+internal sealed class MeetingWasteKillerDbContext(DbContextOptions<MeetingWasteKillerDbContext> options)
     : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
