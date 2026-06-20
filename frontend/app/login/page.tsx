@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { login, tokenStorage } from '@/lib/api';
@@ -87,10 +88,13 @@ export default function LoginPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M5 15L15 5" stroke="#06281d" strokeWidth="2.4" strokeLinecap="round" />
-              <circle cx="6.5" cy="6.5" r="2.2" stroke="#06281d" strokeWidth="2" />
-            </svg>
+            <Image
+              src="/meeting-waste-killer-logo-black.png"
+              alt="Meeting Waste Killer logo"
+              width={24}
+              height={24}
+              style={{ mixBlendMode: 'multiply' }}
+            />
           </div>
           <div
             style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 17, letterSpacing: '-0.01em', color: '#eef2f6' }}
