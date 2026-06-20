@@ -1,6 +1,6 @@
 # 🧪 ARCHITETTURA DELLA PoC
 
-# Meeting Waste Killer — Backend PoC
+# Meeting Waste Killer — PoC
 
 | Voce | Dettaglio |
 |---|---|
@@ -15,26 +15,27 @@
 
 1. Obiettivo PoC
 2. Stack PoC
-3. Struttura della Solution
-4. Modello Dati
-5. Autenticazione — JWT Mock
-6. Endpoint implementati
-7. Dati di seed
-8. Layer Responsibilities
-9. Configurazione (`appsettings.json`)
-10. Test
-11. Ordine di sviluppo
-12. Note Architettura Enterprise
+3. Architettura PoC
+4. Struttura della Solution
+5. Modello Dati
+6. Autenticazione — JWT Mock
+7. Endpoint implementati
+8. Dati di seed
+9. Layer Responsibilities
+10. Configurazione (`appsettings.json`)
+11. Test
+12. Ordine di sviluppo
+13. Note Architettura Enterprise
+14. Checklist Demo
 
 ---
 
 # 1. 🎯 Obiettivo PoC
 
-POC backend in **.NET 10 Web API** che espone **4 endpoint read-only** per visualizzare meeting (passati e futuri), il loro Waste Score e KPI aggregati di dashboard. Dati interamente seed statici, autenticazione JWT mock, nessuna integrazione esterna.
+PoC full-stack con **.NET 10 Web API** (backend) e **Next.js 15** (frontend) che espone **4 endpoint read-only** per visualizzare meeting (passati e futuri), il loro Waste Score e KPI aggregati di dashboard. Dati interamente seed statici, autenticazione JWT mock, nessuna integrazione esterna.
 
 **Vincoli PoC:**
 
-- Solo backend (no frontend in scope)
 - Dati seed statici (nessun form di inserimento)
 - WasteScore hardcodato nel seed (no calcolo algoritmico)
 - Auth JWT mock con utenti hardcodati (no Entra ID)
@@ -46,6 +47,7 @@ POC backend in **.NET 10 Web API** che espone **4 endpoint read-only** per visua
 
 | Componente | Scelta |
 |---|---|
+| Frontend | Next.js 15 + Tailwind CSS + shadcn/ui (`npm run dev` → porta 3000) |
 | Runtime | .NET 10 |
 | Framework | ASP.NET Core Web API (Controller) |
 | ORM | EF Core Code First |
@@ -55,10 +57,55 @@ POC backend in **.NET 10 Web API** che espone **4 endpoint read-only** per visua
 
 ---
 
-# 3. 📁 Struttura della Solution
+# 3. 🏗 Architettura PoC
+
+```mermaid
+graph LR
+  subgraph FE["🖥 Frontend · Next.js 15 · porta 3000"]
+    PageDashboard["🏠 Dashboard KPI"]
+    PageLista["📋 Lista Meeting\n(filtri: isFuture, onlyAlerts)"]
+    PageDettaglio["🔍 Dettaglio Meeting"]
+  end
+
+  subgraph BE["⚙️ Backend · .NET 10 · porta 5001"]
+    Auth["POST /auth/login"]
+    Meetings["GET /meetings"]
+    MeetingById["GET /meetings/{id}"]
+    DashboardBE["GET /dashboard"]
+  end
+
+  subgraph DB["🗄 SQL Server LocalDB"]
+    MeetingsT[("meetings")]
+    UsersT[("users")]
+  end
+
+  PageDashboard -->|GET /dashboard| DashboardBE
+  PageLista -->|GET /meetings| Meetings
+  PageDettaglio -->|GET /meetings/{id}| MeetingById
+  DashboardBE --> MeetingsT
+  Meetings --> MeetingsT
+  MeetingById --> MeetingsT
+  MeetingById --> UsersT
+  Auth --> UsersT
+```
+
+---
+
+# 4. 📁 Struttura della Solution
 
 ```
 Internal.TeamBuilding2026.MeetingWasteKiller/
+├── frontend/                                    # Next.js 15 app
+│   ├── app/
+│   │   ├── page.tsx                             # Dashboard KPI
+│   │   ├── meetings/
+│   │   │   ├── page.tsx                         # Lista meeting (filtri: isFuture, onlyAlerts)
+│   │   │   └── [id]/page.tsx                    # Dettaglio meeting
+│   ├── components/
+│   │   ├── ScoreBadge.tsx
+│   │   ├── KpiCard.tsx
+│   │   └── MeetingList.tsx
+│   └── package.json
 ├── src/
 │   ├── MeetingWasteKiller.Domain/               # Entità, contratti repository
 │   ├── MeetingWasteKiller.Business/             # Servizi applicativi, DTO, logica
@@ -70,7 +117,7 @@ Internal.TeamBuilding2026.MeetingWasteKiller/
 
 ---
 
-# 4. 🗂 Modello Dati
+# 5. 🗂 Modello Dati
 
 ### User
 ```csharp
@@ -127,7 +174,7 @@ public class Attachment
 
 ---
 
-# 5. 🔐 Autenticazione — JWT Mock
+# 6. 🔐 Autenticazione — JWT Mock
 
 ### Endpoint
 ```
@@ -148,7 +195,7 @@ Tutti gli endpoint (tranne `/auth/login`) richiedono `[Authorize]`.
 
 ---
 
-# 6. 🌐 Endpoint implementati (PoC)
+# 7. 🌐 Endpoint implementati (PoC)
 
 | Metodo | Endpoint | Auth | Descrizione |
 |---|---|---|---|
@@ -225,7 +272,7 @@ estimatedCost = SUM(participant.DailyCost / 8 * (durationMinutes / 60))
 
 ---
 
-# 7. 🗃 Dati di seed
+# 8. 🗃 Dati di seed
 
 Precaricare nel `DbContext.OnModelCreating` (o in un `IHostedService` di seed):
 
@@ -253,7 +300,7 @@ Soglia configurabile in `appsettings.json` → `WasteScore:AlertThreshold`.
 
 ---
 
-# 8. ⚙️ Layer Responsibilities
+# 9. ⚙️ Layer Responsibilities
 
 ### Domain
 - Entità: `User`, `Meeting`, `MeetingParticipant`, `Attachment`
@@ -279,7 +326,7 @@ Soglia configurabile in `appsettings.json` → `WasteScore:AlertThreshold`.
 
 ---
 
-# 9. 🔧 Configurazione (`appsettings.json`)
+# 10. 🔧 Configurazione (`appsettings.json`)
 
 ```json
 {
@@ -300,7 +347,7 @@ Soglia configurabile in `appsettings.json` → `WasteScore:AlertThreshold`.
 
 ---
 
-# 10. 🧪 Test (`Business.Tests`)
+# 11. 🧪 Test (`Business.Tests`)
 
 | Test | Descrizione |
 |---|---|
@@ -314,17 +361,20 @@ Soglia configurabile in `appsettings.json` → `WasteScore:AlertThreshold`.
 
 ---
 
-# 11. 🚀 Ordine di sviluppo
+# 12. 🚀 Ordine di sviluppo
 
 1. **Scaffold solution** — creare i 4 progetti + test project con `dotnet new`
 2. **Domain** — entità + interfacce repository
 3. **Infrastructure** — DbContext + Fluent API + seed + migration
 4. **Business** — servizi + DTO
 5. **Presentation** — controller + `Program.cs` (DI, JWT, Swagger)
-6. **Test** — unit test dei servizi
-7. **Smoke test** — avviare, applicare migration, verificare Swagger
+6. **Frontend** — scaffold Next.js 15, configurare proxy API, implementare Dashboard, Lista e Dettaglio
+7. **Test** — unit test dei servizi
+8. **Smoke test** — avviare backend + frontend, applicare migration, verificare Swagger e UI
 
 ### Avvio locale
+
+**Backend:**
 ```bash
 cd src/MeetingWasteKiller.Presentation
 dotnet restore
@@ -333,9 +383,22 @@ dotnet run
 # → https://localhost:5001/swagger
 ```
 
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+# → http://localhost:3000
+```
+
+> **`.env.local` (frontend):**
+> ```
+> NEXT_PUBLIC_API_URL=https://localhost:5001
+> ```
+
 ---
 
-# 12. 🏢 Note Architettura Enterprise (out of scope PoC)
+# 13. 🏢 Note Architettura Enterprise (out of scope PoC)
 
 | Componente | Descrizione |
 |---|---|
@@ -346,3 +409,15 @@ dotnet run
 | **Azure Key Vault** | Secrets management |
 | **Azure Static Web App** | Hosting frontend |
 | **Entra ID** | Autenticazione reale al posto del JWT mock |
+
+---
+
+# 14. ✅ Checklist Demo
+
+| Step | Azione | Effetto atteso |
+|---|---|---|
+| 1 | Apri la dashboard (`/`) | KPI visibili: avgWasteScore, costo sprecato totale, conteggio alert |
+| 2 | Naviga alla lista meeting (`/meetings`) | Badge colorati per WasteScore, filtro `onlyAlerts` funzionante |
+| 3 | Clicca su un meeting ad alto WasteScore | Dettaglio con partecipanti, `estimatedCost` calcolato, WasteReason |
+| 4 | Filtra per `?isFuture=true` | Visualizzati solo i meeting futuri |
+| 5 | Controlla `/swagger` | Tutti e 4 gli endpoint documentati e testabili con JWT |
