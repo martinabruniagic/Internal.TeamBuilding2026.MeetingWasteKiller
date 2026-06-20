@@ -1,12 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Internal.MeetingWasteKiller.Business.AuthFeature;
 
-public sealed class AuthService(IConfiguration configuration)
+public sealed class AuthService(IOptions<JwtOptions> jwtOptions) : IAuthService
 {
     private static readonly List<(string Email, string Password, string Role)> HardcodedUsers =
     [
@@ -22,9 +22,10 @@ public sealed class AuthService(IConfiguration configuration)
         if (user == default || user.Password != request.Password)
             throw new UnauthorizedAccessException("Invalid credentials");
 
-        var expiresAt = DateTime.UtcNow.AddHours(int.Parse(configuration["Jwt:ExpiryHours"]!));
+        var options = jwtOptions.Value;
+        var expiresAt = DateTime.UtcNow.AddHours(options.ExpiryHours);
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.Key));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         Claim[] claims =
@@ -34,8 +35,8 @@ public sealed class AuthService(IConfiguration configuration)
         ];
 
         var token = new JwtSecurityToken(
-            issuer: configuration["Jwt:Issuer"],
-            audience: configuration["Jwt:Audience"],
+            issuer: options.Issuer,
+            audience: options.Audience,
             claims: claims,
             expires: expiresAt,
             signingCredentials: credentials);

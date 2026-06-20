@@ -11,10 +11,16 @@ internal sealed class MeetingRepository(MeetingWasteKillerDbContext context) : I
     {
         var query = context.Meetings
             .Include(m => m.Participants)
+                .ThenInclude(mp => mp.User)
             .AsQueryable();
 
         if (isFuture is not null)
-            query = query.Where(m => m.IsFuture == isFuture.Value);
+        {
+            var now = DateTime.UtcNow;
+            query = isFuture.Value
+                ? query.Where(m => m.Date > now)
+                : query.Where(m => m.Date <= now);
+        }
 
         if (onlyAlerts)
             query = query.Where(m => m.IsAlert);

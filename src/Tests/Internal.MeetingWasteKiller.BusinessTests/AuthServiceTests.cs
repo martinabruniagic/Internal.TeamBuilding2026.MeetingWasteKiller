@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Internal.MeetingWasteKiller.Business.AuthFeature;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Internal.MeetingWasteKiller.BusinessTests;
@@ -10,8 +10,7 @@ public sealed class AuthServiceTests
     [Fact]
     public async Task Login_WithValidCredentials_ReturnsToken()
     {
-        var configuration = BuildConfiguration();
-        var service = new AuthService(configuration);
+        var service = new AuthService(BuildOptions());
 
         var result = await service.LoginAsync(new LoginRequestDto("martina@company.com", "password"));
 
@@ -28,26 +27,19 @@ public sealed class AuthServiceTests
         string email,
         string password)
     {
-        var configuration = BuildConfiguration();
-        var service = new AuthService(configuration);
+        var service = new AuthService(BuildOptions());
 
         var act = async () => await service.LoginAsync(new LoginRequestDto(email, password));
 
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
     }
 
-    private static IConfiguration BuildConfiguration()
-    {
-        var configData = new Dictionary<string, string?>
+    private static IOptions<JwtOptions> BuildOptions() =>
+        Options.Create(new JwtOptions
         {
-            ["Jwt:Key"] = "MeetingWasteKiller_SuperSecretKey_32chars!",
-            ["Jwt:Issuer"] = "MeetingWasteKiller",
-            ["Jwt:Audience"] = "MeetingWasteKillerClient",
-            ["Jwt:ExpiryHours"] = "8"
-        };
-
-        return new ConfigurationBuilder()
-            .AddInMemoryCollection(configData)
-            .Build();
-    }
+            Key = "MeetingWasteKiller_SuperSecretKey_32chars!",
+            Issuer = "MeetingWasteKiller",
+            Audience = "MeetingWasteKillerClient",
+            ExpiryHours = 8
+        });
 }

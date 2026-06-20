@@ -6,7 +6,7 @@ namespace Internal.MeetingWasteKiller.Business.DashboardFeature;
 
 public sealed class DashboardService(
     IMeetingRepository repository,
-    IOptions<WasteScoreOptions> wasteOptions)
+    IOptions<WasteScoreOptions> wasteOptions) : IDashboardService
 {
     public async Task<DashboardDto> GetKpisAsync()
     {

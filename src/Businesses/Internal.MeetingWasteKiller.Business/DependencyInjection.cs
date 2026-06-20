@@ -13,12 +13,21 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        var jwtOptions = new JwtOptions();
+        configuration.GetSection(JwtOptions.SectionName).Bind(jwtOptions);
+        jwtOptions.Validate();
+
+        var wasteOptions = new WasteScoreOptions();
+        configuration.GetSection(WasteScoreOptions.SectionName).Bind(wasteOptions);
+        wasteOptions.Validate();
+
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.Configure<WasteScoreOptions>(
             configuration.GetSection(WasteScoreOptions.SectionName));
 
-        services.AddScoped<MeetingService>();
-        services.AddScoped<DashboardService>();
-        services.AddScoped<AuthService>();
+        services.AddScoped<IMeetingService, MeetingService>();
+        services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }

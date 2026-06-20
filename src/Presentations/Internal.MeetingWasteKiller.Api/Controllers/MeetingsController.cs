@@ -7,7 +7,7 @@ namespace Internal.MeetingWasteKiller.Api.Controllers;
 [ApiController]
 [Route("[controller]")]
 [Authorize]
-public sealed class MeetingsController(MeetingService meetingService) : ControllerBase
+public sealed class MeetingsController(IMeetingService meetingService) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType<IEnumerable<MeetingListDto>>(StatusCodes.Status200OK)]
