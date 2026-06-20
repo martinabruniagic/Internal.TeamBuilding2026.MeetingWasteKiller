@@ -1,0 +1,55 @@
+# =============================================================
+# terraform.tfvars.example
+# Copy this file to terraform.tfvars for local bootstrap runs.
+#
+# RULES:
+#   ✅ Commit this file (terraform.tfvars.example)
+#   ❌ NEVER commit terraform.tfvars  — contiene segreti reali
+#   ✅ Commit .terraform.lock.hcl     — fissa le versioni dei provider
+#   ❌ Never commit .terraform/        — generato automaticamente
+# =============================================================
+
+subscription_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# Azure region — tutte le risorse tranne la Static Web App (sempre westeurope)
+location    = "italynorth"
+app_name    = "meeting-waste-killer"
+environment = "prod"
+
+sql_admin_username = "sqladmin"
+
+# SENSIBILE — sostituire con una password reale (min 16 chars, maiuscola+minuscola+numero+simbolo)
+sql_admin_password = "CHANGE_ME_min16chars!Az1"
+
+# SENSIBILE — chiave JWT, minimo 32 caratteri
+jwt_key = "CHANGE_ME_minimum_32_characters_long_signing_key!!"
+
+# Nome dello storage account per il Terraform remote state (già esistente in rg-blue)
+# 3-24 caratteri alfanumerici minuscoli, globalmente unico in Azure
+tf_state_storage_account = "stbluetfstate"
+
+tags = {
+  Project    = "TeamBuilding2026"
+  CostCenter = "internal"
+}
+
+# ---------------------------------------------------------------------------
+# NOTE
+# ---------------------------------------------------------------------------
+# Init:
+#   terraform init -backend-config="storage_account_name=stbluetfstate"
+#
+# Apply:
+#   terraform apply -var-file=terraform.tfvars
+#
+# Key Vault name  : "kv-mwk-<environment>" — deve essere globalmente unico in Azure
+# SQL Server name : "sql-<app_name>-<environment>" — deve essere globalmente unico in Azure
+#
+# GitHub Secrets da configurare:
+#   AZURE_CLIENT_ID          = Client ID dell'App Registration
+#   AZURE_CLIENT_SECRET      = Client Secret dell'App Registration
+#   AZURE_TENANT_ID          = Tenant ID Azure AD
+#   AZURE_SUBSCRIPTION_ID    = Subscription ID
+#   TF_VAR_SQL_ADMIN_PASSWORD = stessa password di sql_admin_password
+#   TF_VAR_JWT_KEY            = stessa chiave di jwt_key
+#   TF_STATE_STORAGE_ACCOUNT  = stbluetfstate
