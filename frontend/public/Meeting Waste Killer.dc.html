@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'Manrope', system-ui, sans-serif; background: #0a0c10; color: #eef2f6; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  input { font-family: inherit; }
+  @keyframes mwkUp { from { opacity: 0.001; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mwkGlow { 0%,100% { opacity: .5; } 50% { opacity: .85; } }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #0a0c10;">
+
+  <!-- ===================== LOGIN ===================== -->
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+  <div style="display: flex; min-height: 100vh; width: 100%;">
+
+    <!-- brand panel -->
+    <div style="flex: 1.15; position: relative; overflow: hidden; background: radial-gradient(120% 120% at 0% 0%, #0f2a20 0%, #0a0c10 55%); padding: 56px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid rgba(255,255,255,0.05);">
+      <div style="position: absolute; right: -160px; bottom: -160px; width: 620px; height: 620px; pointer-events: none; animation: mwkGlow 6s ease-in-out infinite;">
+        <svg viewBox="0 0 620 620" width="620" height="620">
+          <circle cx="310" cy="310" r="240" fill="none" stroke="rgba(52,211,153,0.16)" stroke-width="2"/>
+          <circle cx="310" cy="310" r="180" fill="none" stroke="rgba(52,211,153,0.10)" stroke-width="2"/>
+          <circle cx="310" cy="310" r="240" fill="none" stroke="#34d399" stroke-width="6" stroke-linecap="round" stroke-dasharray="1508" stroke-dashoffset="640" transform="rotate(-90 310 310)" style="filter: drop-shadow(0 0 14px rgba(52,211,153,0.55));"/>
+        </svg>
+      </div>
+      <div style="display: flex; align-items: center; gap: 13px; position: relative;">
+        <div style="width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(160deg, #6ee7b7, #34d399); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px -8px rgba(52,211,153,0.7);">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 15L15 5" stroke="#06281d" stroke-width="2.4" stroke-linecap="round"/><circle cx="6.5" cy="6.5" r="2.2" stroke="#06281d" stroke-width="2"/></svg>
+        </div>
+        <div style="font-family: 'Space Grotesk'; font-weight: 700; font-size: 17px; letter-spacing: -0.01em;">Meeting Waste Killer</div>
+      </div>
+      <div style="position: relative; max-width: 460px;">
+        <div style="font-family: 'JetBrains Mono'; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #34d399; margin-bottom: 20px;">Proof of Concept</div>
+        <div style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 46px; line-height: 1.06; letter-spacing: -0.025em; margin-bottom: 20px;">Smetti di sprecare tempo in riunioni inutili.</div>
+        <div style="font-size: 16px; line-height: 1.6; color: #9aa4b2;">Ogni meeting ha un costo. Misura lo spreco, individua le riunioni critiche e recupera ore — e budget — del tuo team.</div>
+      </div>
+      <div style="position: relative; font-family: 'JetBrains Mono'; font-size: 12px; color: #5a6472; letter-spacing: 0.04em;">Demo · dati simulati · Giugno 2026</div>
+    </div>
+
+    <!-- form panel -->
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px; background: #0a0c10;">
+      <div style="width: 100%; max-width: 360px;">
+        <div style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 26px; letter-spacing: -0.02em; margin-bottom: 8px;">Accedi al cruscotto</div>
+        <div style="font-size: 14px; color: #8b95a4; margin-bottom: 32px;">Usa le credenziali demo precompilate.</div>
+
+        <div style="font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #8b95a4; margin-bottom: 9px;">Email</div>
+        <input value="martina@company.com" readonly style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.09); background: #13161c; color: #eef2f6; font-size: 14px; outline: none; margin-bottom: 20px;" />
+
+        <div style="font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #8b95a4; margin-bottom: 9px;">Password</div>
+        <input type="password" value="password" readonly style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.09); background: #13161c; color: #eef2f6; font-size: 14px; outline: none; margin-bottom: 28px;" />
+
+        <div onClick="{{ goDashboard }}" style="width: 100%; padding: 15px; border-radius: 12px; background: linear-gradient(180deg, #6ee7b7, #34d399); color: #06281d; font-weight: 700; font-size: 15px; text-align: center; cursor: pointer; box-shadow: 0 14px 34px -10px rgba(52,211,153,0.7); transition: transform .12s;" style-hover="transform: translateY(-1px);" style-active="transform: translateY(0);">Accedi alla dashboard</div>
+
+        <div style="margin-top: 18px; display: flex; align-items: center; gap: 8px; justify-content: center; font-size: 12.5px; color: #5a6472;">
+          <span style="width: 6px; height: 6px; border-radius: 999px; background: #34d399; box-shadow: 0 0 8px #34d399;"></span>
+          JWT mock · nessun dato reale
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== APP ===================== -->
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; height: 100vh; overflow: hidden;">
+
+    <!-- sidebar -->
+    <div style="width: 252px; flex: none; height: 100vh; background: #0c0e13; border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; padding: 24px 18px;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 8px 26px;">
+        <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(160deg, #6ee7b7, #34d399); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 22px -8px rgba(52,211,153,0.7);">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 15L15 5" stroke="#06281d" stroke-width="2.4" stroke-linecap="round"/><circle cx="6.5" cy="6.5" r="2.2" stroke="#06281d" stroke-width="2"/></svg>
+        </div>
+        <div style="line-height: 1.1;">
+          <div style="font-family: 'Space Grotesk'; font-weight: 700; font-size: 14px;">WasteKiller</div>
+          <div style="font-family: 'JetBrains Mono'; font-size: 9.5px; letter-spacing: 0.12em; color: #5a6472; text-transform: uppercase;">PoC v1.1</div>
+        </div>
+      </div>
+
+      <div style="font-family: 'JetBrains Mono'; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #4d5663; padding: 0 10px 10px;">Menu</div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div onClick="{{ goDashboard }}" style="{{ navDashStyle }}">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1.5" y="1.5" width="6" height="6" rx="1.5"/><rect x="10.5" y="1.5" width="6" height="6" rx="1.5"/><rect x="1.5" y="10.5" width="6" height="6" rx="1.5"/><rect x="10.5" y="10.5" width="6" height="6" rx="1.5"/></svg>
+          Dashboard
+        </div>
+        <div onClick="{{ goMeetings }}" style="{{ navMeetStyle }}">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 4.5H15.5"/><path d="M6 9H15.5"/><path d="M6 13.5H15.5"/><circle cx="2.5" cy="4.5" r="0.6" fill="currentColor"/><circle cx="2.5" cy="9" r="0.6" fill="currentColor"/><circle cx="2.5" cy="13.5" r="0.6" fill="currentColor"/></svg>
+          Meeting
+        </div>
+      </div>
+
+      <div style="flex: 1;"></div>
+
+      <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; display: flex; align-items: center; gap: 11px;">
+        <div style="width: 36px; height: 36px; flex: none; border-radius: 999px; background: rgba(52,211,153,0.14); border: 1px solid rgba(52,211,153,0.3); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk'; font-weight: 600; font-size: 13px; color: #6ee7b7;">MC</div>
+        <div style="flex: 1; min-width: 0; line-height: 1.2;">
+          <div style="font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Martina Conti</div>
+          <div style="font-size: 11px; color: #5a6472;">Manager</div>
+        </div>
+        <div onClick="{{ logout }}" title="Esci" style="cursor: pointer; color: #5a6472; padding: 6px; border-radius: 8px;" style-hover="color: #9aa4b2; background: rgba(255,255,255,0.04);">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15.5H3.5V2.5H7"/><path d="M11 12.5L14.5 9L11 5.5"/><path d="M14.5 9H6.5"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- main -->
+    <div style="flex: 1; height: 100vh; overflow-y: auto; position: relative; background: radial-gradient(90% 60% at 80% -5%, rgba(52,211,153,0.06) 0%, rgba(10,12,16,0) 60%);">
+
+      <!-- ---------- DASHBOARD ---------- -->
+      <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 38px 44px 60px; max-width: 1280px;">
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px;">
+          <div>
+            <div style="font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #34d399; margin-bottom: 8px;">Panoramica</div>
+            <div style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 32px; letter-spacing: -0.02em;">Dashboard</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 9px 15px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); font-size: 13px; color: #9aa4b2;">
+            <span style="width: 7px; height: 7px; border-radius: 999px; background: #34d399; box-shadow: 0 0 8px #34d399;"></span>
+            Giugno 2026
+          </div>
+        </div>
+
+        <!-- KPI row -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 18px;">
+          <div style="background: #13161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 22px;">
+            <div style="font-family: 'JetBrains Mono'; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #8b95a4; margin-bottom: 16px;">Waste Score medio</div>
+            <div style="display: flex; align-items: baseline; gap: 4px;"><span style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 40px; letter-spacing: -0.02em; color: #6ee7b7;">{{ avgScore }}</span><span style="font-size: 16px; color: #5a6472; font-weight: 600;">/100</span></div>
+            <div style="font-size: 12px; color: #5a6472; margin-top: 8px;">soglia alert a 60</div>
+          </div>
+          <div style="background: #13161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 22px;">
+            <div style="font-family: 'JetBrains Mono'; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #8b95a4; margin-bottom: 16px;">Costo sprecato</div>
+            <div style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 40px; letter-spacing: -0.02em;">{{ totalWastedLabel }}</div>
+            <div style="font-size: 12px; color: #5a6472; margin-top: 8px;">su {{ totalEstLabel }} stimati</div>
+          </div>
+          <div style="background: #13161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 22px;">
+            <div style="font-family: 'JetBrains Mono'; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #8b95a4; margin-bottom: 16px;">Meeting in alert</div>
+            <div style="display: flex; align-items: baseline; gap: 4px;"><span style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 40px; letter-spacing: -0.02em;">{{ alertCount }}</span><span style="font-size: 16px; color: #5a6472; font-weight: 600;">/{{ total }}</span></div>
+            <div style="font-size: 12px; color: #5a6472; margin-top: 8px;">oltre la soglia di spreco</div>
+          </div>
+          <div style="background: #13161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 22px;">
+            <div style="font-family: 'JetBrains Mono'; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #8b95a4; margin-bottom: 16px;">Sotto soglia</div>
+            <div style="display: flex; align-items: baseline; gap: 4px;"><span style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 40px; letter-spacing: -0.02em;">{{ belowPct }}</span><span style="font-size: 18px; color: #5a6472; font-weight: 600;">%</span></div>
+            <div style="font-size: 12px; color: #5a6472; margin-top: 8px;">{{ belowCount }} meeting virtuosi</div>
+          </div>
+        </div>
+
+        <!-- charts row -->
+        <div style="display: grid; grid-template-columns: 1.85fr 1fr; gap: 18px;">
+
+          <!-- bars -->
+          <div style="background: #13161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 26px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;">
+              <div>
+                <div style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 17px;">Costo sprecato per meeting</div>
+                <div style="font-size: 12.5px; color: #5a6472; margin-top: 3px;">stima in € · ordinato per impatto</div>
+              </div>
+              <div style="font-family: 'JetBrains Mono'; font-size: 11px; color: #5a6472;">€ sprecati</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <sc-for list="{{ bars }}" as="b" hint-placeholder-count="7">
+                <div onClick="{{ b.open }}" style="display: grid; grid-template-columns: 168px 1fr 76px; align-items: center; gap: 14px; cursor: pointer;">
+                  <div style="font-size: 13px; font-weight: 500; color: #c8d0da; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ b.title }}</div>
+                  <div style="height: 22px; background: rgba(255,255,255,0.04); border-radius: 7px; overflow: hidden;">
+                    <div style="height: 100%; width: {{ b.barWidth }}; background: {{ b.barColor }}; border-radius: 7px; box-shadow: 0 0 16px -2px {{ b.barColor }};"></div>
+                  </div>
+                  <div style="font-family: 'JetBrains Mono'; font-size: 13px; font-weight: 500; text-align: right; color: #eef2f6;">{{ b.wastedLabel }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- gauge + alerts -->
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div style="background: #13161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 26px; display: flex; flex-direction: column; align-items: center;">
+              <div style="align-self: flex-start; font-family: 'Space Grotesk'; font-weight: 600; font-size: 17px; margin-bottom: 8px;">Waste Score medio</div>
+              <div style="position: relative; width: 200px; height: 200px; margin: 6px 0;">
+                <svg viewBox="0 0 220 220" width="200" height="200">
+                  <circle cx="110" cy="110" r="92" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="16"/>
+                  <circle cx="110" cy="110" r="92" fill="none" stroke="#34d399" stroke-width="16" stroke-linecap="round" stroke-dasharray="{{ gaugeC }}" stroke-dashoffset="{{ gaugeOffset }}" transform="rotate(-90 110 110)" style="filter: drop-shadow(0 0 10px rgba(52,211,153,0.55));"/>
+                </svg>
+                <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                  <div style="font-family: 'Space Grotesk'; font-weight: 700; font-size: 52px; letter-spacing: -0.03em; color: #6ee7b7; line-height: 1;">{{ avgScore }}</div>
+                  <div style="font-family: 'JetBrains Mono'; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #5a6472; margin-top: 6px;">su 100</div>
+                </div>
+              </div>
+              <div style="font-size: 12.5px; color: #8b95a4; text-align: center; margin-top: 4px;">livello di spreco medio sui {{ total }} meeting analizzati</div>
+            </div>
+
+            <div style="background: #13161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 22px;">
+              <div style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 15px; margin-bottom: 16px;">Meeting da rivedere</div>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <sc-for list="{{ topAlerts }}" as="a" hint-placeholder-count="3">
+                  <div onClick="{{ a.open }}" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                    <div style="position: relative; width: 38px; height: 38px; flex: none;">
+                      <svg viewBox="0 0 56 56" width="38" height="38">
+                        <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="5"/>
+                        <circle cx="28" cy="28" r="22" fill="none" stroke="{{ a.ringColor }}" stroke-width="5" stroke-linecap="round" stroke-dasharray="{{ a.ringC }}" stroke-dashoffset="{{ a.ringOffset }}" transform="rotate(-90 28 28)"/>
+                      </svg>
+                      <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono'; font-size: 11px; font-weight: 600; color: #eef2f6;">{{ a.score }}</div>
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                      <div style="font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ a.title }}</div>
+                      <div style="font-size: 11.5px; color: #5a6472;">{{ a.wastedLabel }} sprecati</div>
+                    </div>
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#5a6472" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5L10.5 8L6 12.5"/></svg>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ---------- MEETINGS LIST ---------- -->
+      <sc-if value="{{ isMeetings }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 38px 44px 60px; max-width: 1180px;">
+        <div style="margin-bottom: 26px;">
+          <div style="font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #34d399; margin-bottom: 8px;">Analisi</div>
+          <div style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 32px; letter-spacing: -0.02em;">Meeting</div>
+          <div style="font-size: 14px; color: #8b95a4; margin-top: 6px;">{{ total }} riunioni analizzate · filtra per individuare gli sprechi</div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 22px;">
+          <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4">
+            <div onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }} · {{ f.count }}</div>
+          </sc-for>
+        </div>
+
+        <div style="background: #13161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; overflow: hidden;">
+          <div style="display: grid; grid-template-columns: 70px minmax(0,1fr) 150px 130px 40px; align-items: center; gap: 16px; padding: 15px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); font-family: 'JetBrains Mono'; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #5a6472;">
+            <div>Score</div><div>Meeting</div><div>Quando</div><div style="text-align: right;">Sprecati</div><div></div>
+          </div>
+          <sc-for list="{{ listItems }}" as="m" hint-placeholder-count="7">
+            <div onClick="{{ m.open }}" style="display: grid; grid-template-columns: 70px minmax(0,1fr) 150px 130px 40px; align-items: center; gap: 16px; padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; transition: background .12s;" style-hover="background: rgba(255,255,255,0.025);">
+              <div style="position: relative; width: 52px; height: 52px;">
+                <svg viewBox="0 0 56 56" width="52" height="52">
+                  <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="4.5"/>
+                  <circle cx="28" cy="28" r="22" fill="none" stroke="{{ m.ringColor }}" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="{{ m.ringC }}" stroke-dashoffset="{{ m.ringOffset }}" transform="rotate(-90 28 28)" style="filter: drop-shadow(0 0 5px rgba(52,211,153,0.35));"/>
+                </svg>
+                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk'; font-size: 15px; font-weight: 600; color: #eef2f6;">{{ m.score }}</div>
+              </div>
+              <div style="min-width: 0;">
+                <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 4px; min-width: 0;">
+                  <span style="font-family: 'Space Grotesk'; font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto;">{{ m.title }}</span>
+                  <sc-if value="{{ m.isAlert }}" hint-placeholder-val="{{ false }}"><span style="flex: none; font-family: 'JetBrains Mono'; font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; padding: 3px 7px; border-radius: 6px; background: rgba(52,211,153,0.16); color: #6ee7b7;">ALERT</span></sc-if>
+                  <sc-if value="{{ m.isFuture }}" hint-placeholder-val="{{ false }}"><span style="flex: none; font-family: 'JetBrains Mono'; font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; padding: 3px 7px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.14); color: #8b95a4;">FUTURO</span></sc-if>
+                </div>
+                <div style="font-size: 12.5px; color: #5a6472;">{{ m.durationLabel }} · {{ m.participantCount }} partecipanti</div>
+              </div>
+              <div style="font-size: 13px; color: #9aa4b2;"><span style="color: #c8d0da; font-weight: 500;">{{ m.dateLabel }}</span><br/>{{ m.weekday }} · {{ m.time }}</div>
+              <div style="font-family: 'JetBrains Mono'; font-size: 15px; font-weight: 500; text-align: right;">{{ m.wastedLabel }}</div>
+              <div style="display: flex; justify-content: flex-end;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#5a6472" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5L10.5 8L6 12.5"/></svg></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ---------- DETAIL ---------- -->
+      <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 32px 44px 60px; max-width: 1100px;">
+        <div onClick="{{ backToMeetings }}" style="display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: #8b95a4; cursor: pointer; margin-bottom: 24px;" style-hover="color: #eef2f6;">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5L5.5 8L10 12.5"/></svg>
+          Tutti i meeting
+        </div>
+
+        <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 28px;">
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+              <sc-if value="{{ sel.isAlert }}" hint-placeholder-val="{{ false }}"><span style="font-family: 'JetBrains Mono'; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; padding: 4px 9px; border-radius: 7px; background: rgba(52,211,153,0.16); color: #6ee7b7;">⚠ ALERT SPRECO</span></sc-if>
+              <sc-if value="{{ sel.isFuture }}" hint-placeholder-val="{{ false }}"><span style="font-family: 'JetBrains Mono'; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; padding: 4px 9px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.14); color: #8b95a4;">MEETING FUTURO</span></sc-if>
+            </div>
+            <div style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 30px; letter-spacing: -0.02em; margin-bottom: 12px;">{{ sel.title }}</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 18px; font-size: 13.5px; color: #9aa4b2;">
+              <span style="display: inline-flex; align-items: center; gap: 7px;"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#5a6472" stroke-width="1.6"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M2 6.5H14M5.5 2V4M10.5 2V4" stroke-linecap="round"/></svg>{{ sel.weekday }} {{ sel.dateLabel }} · {{ sel.time }}</span>
+              <span style="display: inline-flex; align-items: center; gap: 7px;"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#5a6472" stroke-width="1.6"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8L10.5 9.5" stroke-linecap="round"/></svg>{{ sel.durationLabel }}</span>
+              <span style="display: inline-flex; align-items: center; gap: 7px;"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#5a6472" stroke-width="1.6"><circle cx="6" cy="6" r="2.5"/><path d="M2 13.5C2 11 3.8 9.5 6 9.5C8.2 9.5 10 11 10 13.5" stroke-linecap="round"/><path d="M10.5 4.2C11.7 4.5 12.5 5.4 12.5 6.5M11 9.7C12.8 10 14 11.3 14 13.5" stroke-linecap="round"/></svg>{{ sel.participantCount }} partecipanti</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+
+          <!-- left: score -->
+          <div style="background: #13161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 28px; display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 22px;">
+              <div style="position: relative; width: 140px; height: 140px; flex: none;">
+                <svg viewBox="0 0 168 168" width="140" height="140">
+                  <circle cx="84" cy="84" r="70" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
+                  <circle cx="84" cy="84" r="70" fill="none" stroke="{{ sel.ringColor }}" stroke-width="12" stroke-linecap="round" stroke-dasharray="{{ sel.ringC }}" stroke-dashoffset="{{ sel.ringOffset }}" transform="rotate(-90 84 84)" style="filter: drop-shadow(0 0 10px rgba(52,211,153,0.5));"/>
+                </svg>
+                <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                  <div style="font-family: 'Space Grotesk'; font-weight: 700; font-size: 40px; letter-spacing: -0.03em; color: #6ee7b7; line-height: 1;">{{ sel.score }}</div>
+                  <div style="font-family: 'JetBrains Mono'; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #5a6472; margin-top: 4px;">su 100</div>
+                </div>
+              </div>
+              <div>
+                <div style="font-family: 'JetBrains Mono'; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #8b95a4; margin-bottom: 8px;">Waste Score</div>
+                <div style="font-size: 14px; line-height: 1.55; color: #c8d0da;">{{ sel.reason }}</div>
+              </div>
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
+              <div style="font-family: 'JetBrains Mono'; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #8b95a4; margin-bottom: 10px;">{{ selSummaryLabel }}</div>
+              <div style="font-size: 14px; line-height: 1.6; color: #9aa4b2;">{{ sel.summary }}</div>
+            </div>
+          </div>
+
+          <!-- right: cost + people + files -->
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div style="background: linear-gradient(150deg, rgba(52,211,153,0.12), rgba(19,22,28,0.4)); border: 1px solid rgba(52,211,153,0.22); border-radius: 18px; padding: 24px;">
+              <div style="font-family: 'JetBrains Mono'; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #8b95a4; margin-bottom: 12px;">Costo stimato del meeting</div>
+              <div style="font-family: 'Space Grotesk'; font-weight: 700; font-size: 44px; letter-spacing: -0.02em; color: #eef2f6;">{{ sel.estLabel }}</div>
+              <div style="font-size: 12.5px; color: #8b95a4; margin-top: 8px;">costo orario dei partecipanti × durata</div>
+            </div>
+
+            <div style="background: #13161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 22px;">
+              <div style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 15px; margin-bottom: 16px;">Partecipanti</div>
+              <div style="display: flex; flex-direction: column; gap: 13px;">
+                <sc-for list="{{ selParticipants }}" as="p" hint-placeholder-count="4">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 36px; height: 36px; flex: none; border-radius: 999px; background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk'; font-weight: 600; font-size: 12px; color: #6ee7b7;">{{ p.initials }}</div>
+                    <div style="flex: 1; min-width: 0;">
+                      <div style="font-size: 13.5px; font-weight: 600;">{{ p.name }}</div>
+                      <div style="font-size: 11.5px; color: #5a6472;">{{ p.role }}</div>
+                    </div>
+                    <div style="font-family: 'JetBrains Mono'; font-size: 12px; color: #8b95a4;">{{ p.dailyLabel }}<span style="color: #4d5663;">/g</span></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <sc-if value="{{ selHasAtts }}" hint-placeholder-val="{{ false }}">
+            <div style="background: #13161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 22px;">
+              <div style="font-family: 'Space Grotesk'; font-weight: 600; font-size: 15px; margin-bottom: 16px;">Allegati</div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <sc-for list="{{ selAtts }}" as="att" hint-placeholder-count="2">
+                  <div style="display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 11px; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05); cursor: pointer;" style-hover="border-color: rgba(52,211,153,0.3);">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#34d399" stroke-width="1.5"><path d="M4 2H10L14 6V16H4V2Z" stroke-linejoin="round"/><path d="M10 2V6H14" stroke-linejoin="round"/></svg>
+                    <div style="flex: 1; font-size: 13px; font-weight: 500;">{{ att.name }}</div>
+                    <div style="font-family: 'JetBrains Mono'; font-size: 11px; color: #5a6472;">{{ att.size }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { screen: 'login', filter: 'all', selectedId: 'm1' };
+
+  eur(n) { return '\u20ac' + Math.round(n).toLocaleString('it-IT'); }
+  dur(m) { const h = Math.floor(m / 60), mm = m % 60; return h ? (mm ? h + 'h ' + mm + 'm' : h + 'h') : mm + 'm'; }
+  tint(s) { return 'rgba(52,211,153,' + (0.4 + 0.6 * s / 100).toFixed(2) + ')'; }
+
+  build() {
+    const U = {
+      u1: { id: 'u1', name: 'Mario Rossi', initials: 'MR', role: 'Manager', daily: 800 },
+      u2: { id: 'u2', name: 'Giulia Bianchi', initials: 'GB', role: 'Senior Dev', daily: 600 },
+      u3: { id: 'u3', name: 'Luca Verdi', initials: 'LV', role: 'Senior Dev', daily: 600 },
+      u4: { id: 'u4', name: 'Martina Conti', initials: 'MC', role: 'Manager', daily: 800 },
+      u5: { id: 'u5', name: 'Davide Ferrari', initials: 'DF', role: 'Junior Dev', daily: 350 },
+      u6: { id: 'u6', name: 'Sara Romano', initials: 'SR', role: 'Junior Dev', daily: 350 },
+      u7: { id: 'u7', name: 'Andrea Greco', initials: 'AG', role: 'Senior Dev', daily: 600 },
+      u8: { id: 'u8', name: 'Elena Costa', initials: 'EC', role: 'Senior Dev', daily: 600 }
+    };
+    const raw = [
+      { id: 'm1', title: 'Sprint Planning Q3', weekday: 'Mer', dateLabel: '10 giu 2026', time: '09:00', duration: 90, score: 80, isFuture: false,
+        reason: 'Sei partecipanti, nessuna decisione registrata e ordine del giorno assente. Durata superiore del 50% al necessario.',
+        summary: 'Discussione generale sullo sprint senza decisioni operative formalizzate. Diversi temi rimandati alla settimana successiva.',
+        parts: ['u1', 'u4', 'u2', 'u3', 'u7', 'u5'], atts: [{ name: 'agenda-sprint.pdf', size: '240 KB' }, { name: 'note-riunione.docx', size: '88 KB' }] },
+      { id: 'm2', title: 'Retrospective di Sprint', weekday: 'Ven', dateLabel: '5 giu 2026', time: '14:00', duration: 60, score: 65, isFuture: false,
+        reason: 'Feedback ripetitivi e poco azionabili; circa il 40% del tempo dedicato ad argomenti fuori tema.',
+        summary: 'Retrospettiva con confronto sui problemi dello sprint, ma senza azioni di miglioramento assegnate a un responsabile.',
+        parts: ['u2', 'u3', 'u7', 'u8', 'u6'], atts: [] },
+      { id: 'm3', title: 'Daily Standup', weekday: 'Ven', dateLabel: '12 giu 2026', time: '09:30', duration: 30, score: 30, isFuture: false,
+        reason: 'Aggiornamenti pertinenti e nei tempi, ma due partecipanti non sono mai intervenuti.',
+        summary: 'Sincronizzazione quotidiana del team di sviluppo. Buon ritmo, qualche partecipante non necessario.',
+        parts: ['u2', 'u3', 'u7', 'u6'], atts: [] },
+      { id: 'm4', title: '1:1 con Tech Lead', weekday: 'Lun', dateLabel: '8 giu 2026', time: '11:00', duration: 30, score: 15, isFuture: false,
+        reason: 'Incontro mirato e produttivo: obiettivi chiari e azioni assegnate. Spreco minimo.',
+        summary: 'Confronto individuale tra developer e tech lead su crescita e priorit\u00e0 tecniche.',
+        parts: ['u1', 'u2'], atts: [] },
+      { id: 'm5', title: 'All-Hands Aziendale', weekday: 'Lun', dateLabel: '1 giu 2026', time: '16:00', duration: 120, score: 90, isFuture: false,
+        reason: 'Otto persone convocate per comunicazioni unidirezionali divulgabili via email. Massimo costo, minima interazione.',
+        summary: 'Comunicazioni aziendali presentate a tutto il team. Contenuti facilmente condivisibili in asincrono.',
+        parts: ['u1', 'u4', 'u2', 'u3', 'u7', 'u8', 'u5', 'u6'], atts: [{ name: 'slide-all-hands.pdf', size: '1.2 MB' }] },
+      { id: 'm6', title: 'Kickoff Progetto Atlas', weekday: 'Gio', dateLabel: '25 giu 2026', time: '10:00', duration: 60, score: 75, isFuture: true,
+        reason: 'Previsione: agenda non condivisa in anticipo e partecipanti potenzialmente non necessari.',
+        summary: 'Avvio del progetto Atlas. Da definire l\u2019agenda e i partecipanti realmente indispensabili prima dell\u2019incontro.',
+        parts: ['u1', 'u2', 'u3', 'u5'], atts: [{ name: 'brief-atlas.pdf', size: '320 KB' }] },
+      { id: 'm7', title: 'Demo Cliente Q3', weekday: 'Dom', dateLabel: '28 giu 2026', time: '15:00', duration: 45, score: 20, isFuture: true,
+        reason: 'Previsione: agenda chiara, obiettivo definito e team essenziale. Spreco atteso basso.',
+        summary: 'Demo trimestrale al cliente con presentazione delle nuove funzionalit\u00e0. Partecipanti essenziali.',
+        parts: ['u4', 'u2', 'u7'], atts: [] }
+    ];
+    const meetings = raw.map(m => {
+      const participants = m.parts.map(id => U[id]);
+      const sumDaily = participants.reduce((a, p) => a + p.daily, 0);
+      const est = sumDaily / 8 * (m.duration / 60);
+      const wasted = est * m.score / 100;
+      return Object.assign({}, m, {
+        participants: participants,
+        participantCount: participants.length,
+        estimatedCost: est,
+        wastedCost: wasted,
+        estLabel: this.eur(est),
+        wastedLabel: this.eur(wasted),
+        durationLabel: this.dur(m.duration),
+        isAlert: m.score > 60
+      });
+    });
+    const total = meetings.length;
+    const avg = meetings.reduce((a, m) => a + m.score, 0) / total;
+    const alertCount = meetings.filter(m => m.isAlert).length;
+    const belowCount = meetings.filter(m => m.score < 60).length;
+    const totalWasted = meetings.reduce((a, m) => a + m.wastedCost, 0);
+    const totalEst = meetings.reduce((a, m) => a + m.estimatedCost, 0);
+    return { meetings, kpi: { total, avg, alertCount, belowCount, belowPct: belowCount / total * 100, totalWasted, totalEst } };
+  }
+
+  renderVals() {
+    if (!this._d) this._d = this.build();
+    const meetings = this._d.meetings, kpi = this._d.kpi;
+    const screen = this.state.screen, f = this.state.filter;
+    const open = (id) => () => this.setState({ screen: 'detail', selectedId: id });
+
+    const listC = 2 * Math.PI * 22;
+    const gaugeC = 2 * Math.PI * 92;
+    const detC = 2 * Math.PI * 70;
+
+    const filtered = meetings.filter(m => f === 'all' ? true : f === 'past' ? !m.isFuture : f === 'future' ? m.isFuture : m.isAlert);
+    const listItems = filtered.map(m => Object.assign({}, m, {
+      ringC: listC, ringOffset: listC * (1 - m.score / 100), ringColor: this.tint(m.score), open: open(m.id)
+    }));
+
+    const maxW = Math.max.apply(null, meetings.map(m => m.wastedCost));
+    const bars = meetings.slice().sort((a, b) => b.wastedCost - a.wastedCost).map(m => Object.assign({}, m, {
+      barWidth: Math.max(4, m.wastedCost / maxW * 100).toFixed(1) + '%', barColor: this.tint(m.score), open: open(m.id)
+    }));
+
+    const topAlerts = meetings.filter(m => m.isAlert).sort((a, b) => b.wastedCost - a.wastedCost).slice(0, 3).map(m => Object.assign({}, m, {
+      ringC: listC, ringOffset: listC * (1 - m.score / 100), ringColor: this.tint(m.score), open: open(m.id)
+    }));
+
+    const counts = {
+      all: meetings.length,
+      past: meetings.filter(m => !m.isFuture).length,
+      future: meetings.filter(m => m.isFuture).length,
+      alerts: meetings.filter(m => m.isAlert).length
+    };
+    const chip = (active) => ({
+      padding: '8px 16px', borderRadius: '999px', cursor: 'pointer', fontSize: '13px', fontWeight: 600,
+      border: '1px solid ' + (active ? 'rgba(52,211,153,0.5)' : 'rgba(255,255,255,0.08)'),
+      color: active ? '#6ee7b7' : '#9aa4b2', background: active ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.02)',
+      transition: 'all .14s', whiteSpace: 'nowrap'
+    });
+    const filters = [
+      { key: 'all', label: 'Tutti', count: counts.all },
+      { key: 'past', label: 'Passati', count: counts.past },
+      { key: 'future', label: 'Futuri', count: counts.future },
+      { key: 'alerts', label: 'Solo alert', count: counts.alerts }
+    ].map(c => Object.assign({}, c, { style: chip(f === c.key), onClick: () => this.setState({ filter: c.key }) }));
+
+    const nav = (active) => ({
+      display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 14px', borderRadius: '12px',
+      cursor: 'pointer', fontSize: '14px', fontWeight: active ? 600 : 500,
+      color: active ? '#06281d' : '#9aa4b2',
+      background: active ? 'linear-gradient(180deg,#6ee7b7,#34d399)' : 'transparent',
+      boxShadow: active ? '0 10px 26px -10px rgba(52,211,153,0.75)' : 'none', transition: 'all .15s'
+    });
+
+    const sel = meetings.find(m => m.id === this.state.selectedId) || meetings[0];
+
+    return {
+      isLogin: screen === 'login', isApp: screen !== 'login',
+      isDashboard: screen === 'dashboard', isMeetings: screen === 'meetings', isDetail: screen === 'detail',
+      goDashboard: () => this.setState({ screen: 'dashboard' }),
+      goMeetings: () => this.setState({ screen: 'meetings' }),
+      backToMeetings: () => this.setState({ screen: 'meetings' }),
+      logout: () => this.setState({ screen: 'login' }),
+      navDashStyle: nav(screen === 'dashboard'),
+      navMeetStyle: nav(screen === 'meetings' || screen === 'detail'),
+      avgScore: Math.round(kpi.avg),
+      totalWastedLabel: this.eur(kpi.totalWasted),
+      totalEstLabel: this.eur(kpi.totalEst),
+      alertCount: kpi.alertCount, total: kpi.total,
+      belowPct: Math.round(kpi.belowPct), belowCount: kpi.belowCount,
+      gaugeC: gaugeC, gaugeOffset: gaugeC * (1 - kpi.avg / 100),
+      bars: bars, listItems: listItems, topAlerts: topAlerts, filters: filters,
+      sel: Object.assign({}, sel, { ringC: detC, ringOffset: detC * (1 - sel.score / 100), ringColor: this.tint(sel.score) }),
+      selParticipants: sel.participants.map(p => Object.assign({}, p, { dailyLabel: this.eur(p.daily) })),
+      selAtts: sel.atts, selHasAtts: sel.atts.length > 0,
+      selSummaryLabel: sel.isFuture ? 'Agenda prevista' : 'Riepilogo'
+    };
+  }
+}
+</script>
+</body>
+</html>
