@@ -6,6 +6,24 @@
 # dotenv files
 .env
 
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!**/*.tfvars.example
+crash.log
+crash.*.log
+*.tfplan
+tfplan
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+# DO NOT add .terraform.lock.hcl here — it must be committed to pin provider versions
+
 # User-specific files
 *.rsuser
 *.suo
