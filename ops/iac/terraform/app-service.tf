@@ -35,6 +35,8 @@ resource "azurerm_linux_web_app" "api" {
     "Jwt__Audience"              = "MeetingWasteKillerClient"
     "Jwt__ExpiryHours"           = "8"
     "WasteScore__AlertThreshold" = "60"
+    # CORS — allowed origin for the ASP.NET Core middleware
+    "Cors__AllowedOrigins__0"    = "https://${azurerm_static_web_app.swa.default_host_name}"
     # CORS via app setting — avoids azurerm provider bug with computed values in cors blocks
     "WEBSITE_CORS_ALLOWED_ORIGINS"     = "https://${azurerm_static_web_app.swa.default_host_name}"
     "WEBSITE_CORS_SUPPORT_CREDENTIALS" = "false"

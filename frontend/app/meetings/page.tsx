@@ -61,11 +61,11 @@ export default function MeetingsPage() {
         )}
       </div>
 
-      {isUsingMock && (
+      {/* {isUsingMock && (
         <p style={{ ...mono, marginBottom: 16, fontSize: 12, color: '#d97706' }}>
           ⚠ Backend non raggiungibile: dati mock
         </p>
-      )}
+      )} */}
 
       {/* Filter chips */}
       {!loading && (

@@ -67,7 +67,6 @@ internal static class DataSeeder
                 Summary         = "Sprint planning per il Q2. Definizione backlog e stime.",
                 WasteScore      = 80,
                 WasteReason     = "Troppi partecipanti, durata eccessiva rispetto al valore prodotto.",
-                IsFuture        = false,
                 IsAlert         = true
             },
             new Meeting
@@ -79,7 +78,6 @@ internal static class DataSeeder
                 Summary         = "Sincronizzazione quotidiana del team di sviluppo.",
                 WasteScore      = 15,
                 WasteReason     = "Meeting efficiente, breve e focalizzato.",
-                IsFuture        = false,
                 IsAlert         = false
             },
             new Meeting
@@ -91,7 +89,6 @@ internal static class DataSeeder
                 Summary         = "Revisione dell'architettura del sistema di autenticazione.",
                 WasteScore      = 65,
                 WasteReason     = "Discussioni circolari senza decisioni concrete.",
-                IsFuture        = false,
                 IsAlert         = true
             },
             new Meeting
@@ -103,7 +100,6 @@ internal static class DataSeeder
                 Summary         = "Retrospettiva di fine sprint: punti positivi e aree di miglioramento.",
                 WasteScore      = 30,
                 WasteReason     = "Meeting produttivo con azioni concrete identificate.",
-                IsFuture        = false,
                 IsAlert         = false
             },
             new Meeting
@@ -115,7 +111,6 @@ internal static class DataSeeder
                 Summary         = "Analisi critica del bug in produzione su modulo pagamenti.",
                 WasteScore      = 90,
                 WasteReason     = "Meeting non strutturato, tre ore per decidere un rollback.",
-                IsFuture        = false,
                 IsAlert         = true
             },
             new Meeting
@@ -127,7 +122,6 @@ internal static class DataSeeder
                 Summary         = "Pianificazione obiettivi e roadmap per il terzo trimestre.",
                 WasteScore      = 75,
                 WasteReason     = "Agenda poco chiara, rischio di derive fuori tema.",
-                IsFuture        = true,
                 IsAlert         = true
             },
             new Meeting
@@ -139,7 +133,6 @@ internal static class DataSeeder
                 Summary         = "Allineamento settimanale sui task in corso e blocchi.",
                 WasteScore      = 20,
                 WasteReason     = "Sync rapido ed efficace.",
-                IsFuture        = true,
                 IsAlert         = false
             }
         );
