@@ -104,12 +104,7 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 }}>
-        <button
-          onClick={toggleTheme}
-          style={{ ...mono, display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 11, color: '#5a6472', background: 'none', border: 'none', cursor: 'pointer', marginBottom: 12, transition: 'color .15s' }}
-        >
-          {isDark ? '☀️ Light mode' : '🌙 Dark mode'}
-        </button>
+        
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
           <div
             style={{
