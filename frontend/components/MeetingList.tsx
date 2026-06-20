@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import type { MeetingListItem } from '@/types';
-import ScoreBadge from './ScoreBadge';
+import ScoreRing from './ScoreRing';
 
 interface Props {
   meetings: MeetingListItem[];
@@ -11,43 +11,135 @@ export default function MeetingList({ meetings }: Props) {
   const router = useRouter();
 
   if (meetings.length === 0) {
-    return <p className="text-gray-500 text-sm">Nessun meeting trovato.</p>;
+    return (
+      <p style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: '#5a6472', padding: '32px', textAlign: 'center' }}>
+        Nessun meeting trovato.
+      </p>
+    );
   }
 
+  const cols = '70px minmax(0,1fr) 160px 40px';
+
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200">
-      <table className="w-full text-sm">
-        <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
-          <tr>
-            <th className="px-4 py-3">Titolo</th>
-            <th className="px-4 py-3">Data</th>
-            <th className="px-4 py-3">Durata</th>
-            <th className="px-4 py-3">Partecipanti</th>
-            <th className="px-4 py-3">WasteScore</th>
-            <th className="px-4 py-3">Tipo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {meetings.map((m) => (
-            <tr
-              key={m.id}
-              onClick={() => router.push(`/meetings/${m.id}`)}
-              className={`cursor-pointer border-t border-gray-100 hover:bg-gray-50 ${m.isAlert ? 'bg-red-50' : ''}`}
-            >
-              <td className="px-4 py-3 font-medium text-gray-800">{m.title}</td>
-              <td className="px-4 py-3 text-gray-600">{new Date(m.date).toLocaleDateString('it-IT')}</td>
-              <td className="px-4 py-3 text-gray-600">{m.durationMinutes} min</td>
-              <td className="px-4 py-3 text-gray-600">{m.participantCount}</td>
-              <td className="px-4 py-3"><ScoreBadge score={m.wasteScore} /></td>
-              <td className="px-4 py-3">
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${m.isFuture ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
-                  {m.isFuture ? 'Futuro' : 'Passato'}
+    <div
+      style={{
+        background: '#13161c',
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: 18,
+        overflow: 'hidden',
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: cols,
+          alignItems: 'center',
+          gap: 16,
+          padding: '15px 24px',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 10.5,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          color: '#5a6472',
+        }}
+      >
+        <div>Score</div>
+        <div>Meeting</div>
+        <div>Quando</div>
+        <div />
+      </div>
+
+      {/* Rows */}
+      {meetings.map((m) => (
+        <div
+          key={m.id}
+          onClick={() => router.push(`/meetings/${m.id}`)}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: cols,
+            alignItems: 'center',
+            gap: 16,
+            padding: '16px 24px',
+            borderBottom: '1px solid rgba(255,255,255,0.04)',
+            cursor: 'pointer',
+            transition: 'background .12s',
+          }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.025)')}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.background = 'transparent')}
+        >
+          <ScoreRing score={m.wasteScore} />
+
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 4, minWidth: 0 }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-heading)',
+                  fontSize: 16,
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  color: '#eef2f6',
+                }}
+              >
+                {m.title}
+              </span>
+              {m.isAlert && (
+                <span
+                  style={{
+                    flexShrink: 0,
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 9.5,
+                    fontWeight: 600,
+                    letterSpacing: '0.08em',
+                    padding: '3px 7px',
+                    borderRadius: 6,
+                    background: 'rgba(52,211,153,0.16)',
+                    color: '#6ee7b7',
+                  }}
+                >
+                  ALERT
                 </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              )}
+              {m.isFuture && (
+                <span
+                  style={{
+                    flexShrink: 0,
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 9.5,
+                    fontWeight: 600,
+                    letterSpacing: '0.08em',
+                    padding: '3px 7px',
+                    borderRadius: 6,
+                    border: '1px solid rgba(255,255,255,0.14)',
+                    color: '#8b95a4',
+                  }}
+                >
+                  FUTURO
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: 12.5, color: '#5a6472' }}>
+              {m.durationMinutes}m · {m.participantCount} partecipanti
+            </div>
+          </div>
+
+          <div style={{ fontSize: 13, color: '#9aa4b2' }}>
+            <span style={{ color: '#c8d0da', fontWeight: 500 }}>
+              {new Date(m.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#5a6472" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 3.5L10.5 8L6 12.5" />
+            </svg>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
+

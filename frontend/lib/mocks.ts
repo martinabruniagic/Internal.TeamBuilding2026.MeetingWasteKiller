@@ -1,4 +1,15 @@
-import type { DashboardKpis, MeetingDetail, MeetingListItem } from '@/types';
+import type { DashboardKpis, LoginResponse, MeetingDetail, MeetingListItem } from '@/types';
+
+const MOCK_USERS: { email: string; password: string; token: string }[] = [
+  { email: 'martina@company.com', password: 'password', token: 'mock-token-martina' },
+  { email: 'dev@company.com',     password: 'password', token: 'mock-token-dev' },
+];
+
+export function getMockLogin(email: string, password: string): LoginResponse | null {
+  const user = MOCK_USERS.find(u => u.email === email && u.password === password);
+  if (!user) return null;
+  return { token: user.token, expiresAt: new Date(Date.now() + 86_400_000).toISOString() };
+}
 
 export const mockDashboardKpis: DashboardKpis = {
   totalMeetings: 7,
@@ -214,4 +225,24 @@ export function getMockMeetings(params: { isFuture?: boolean; onlyAlerts?: boole
 
 export function getMockMeetingById(id: string) {
   return mockMeetingDetails[id] ?? null;
+}
+
+export interface BarItem {
+  id: string;
+  title: string;
+  wasteScore: number;
+  estimatedCost: number;
+  wastedCost: number;
+}
+
+export function getMockBarItems(): BarItem[] {
+  return Object.values(mockMeetingDetails)
+    .map((d) => ({
+      id: d.id,
+      title: d.title,
+      wasteScore: d.wasteScore,
+      estimatedCost: d.estimatedCost,
+      wastedCost: d.estimatedCost * d.wasteScore / 100,
+    }))
+    .sort((a, b) => b.wastedCost - a.wastedCost);
 }

@@ -5,83 +5,96 @@ import { getMockMeetings } from '@/lib/mocks';
 import type { MeetingListItem } from '@/types';
 import MeetingList from '@/components/MeetingList';
 
-type FilterType = 'all' | 'past' | 'future';
+type FilterKey = 'all' | 'past' | 'future' | 'alerts';
+
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: 'all', label: 'Tutti' },
+  { key: 'past', label: 'Passati' },
+  { key: 'future', label: 'Futuri' },
+  { key: 'alerts', label: 'Solo alert' },
+];
+
+const mono = { fontFamily: 'var(--font-mono)' } as const;
+const head = { fontFamily: 'var(--font-heading)' } as const;
 
 export default function MeetingsPage() {
-  const [meetings, setMeetings] = useState<MeetingListItem[]>([]);
+  const [all, setAll] = useState<MeetingListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [isUsingMock, setIsUsingMock] = useState(false);
-  const [filterType, setFilterType] = useState<FilterType>('all');
-  const [onlyAlerts, setOnlyAlerts] = useState(false);
+  const [filterKey, setFilterKey] = useState<FilterKey>('all');
 
   useEffect(() => {
-    setLoading(true);
-    setError('');
-    setIsUsingMock(false);
-    const params: { isFuture?: boolean; onlyAlerts?: boolean } = {};
-    if (filterType === 'past') params.isFuture = false;
-    if (filterType === 'future') params.isFuture = true;
-    if (onlyAlerts) params.onlyAlerts = true;
-
-    getMeetings(params)
-      .then(setMeetings)
-      .catch(() => {
-        setMeetings(getMockMeetings(params));
-        setIsUsingMock(true);
-        setError('Backend non raggiungibile: visualizzo dati mock.');
-      })
+    getMeetings()
+      .then(setAll)
+      .catch(() => { setAll(getMockMeetings()); setIsUsingMock(true); })
       .finally(() => setLoading(false));
-  }, [filterType, onlyAlerts]);
+  }, []);
 
-  const filterButtons: { label: string; value: FilterType }[] = [
-    { label: 'Tutti', value: 'all' },
-    { label: 'Passati', value: 'past' },
-    { label: 'Futuri', value: 'future' },
-  ];
+  const filtered = all.filter(m => {
+    if (filterKey === 'past') return !m.isFuture;
+    if (filterKey === 'future') return m.isFuture;
+    if (filterKey === 'alerts') return m.isAlert;
+    return true;
+  });
+
+  const counts: Record<FilterKey, number> = {
+    all: all.length,
+    past: all.filter(m => !m.isFuture).length,
+    future: all.filter(m => m.isFuture).length,
+    alerts: all.filter(m => m.isAlert).length,
+  };
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-800">Meeting</h1>
-
-      <div className="mb-4 flex flex-wrap items-center gap-4">
-        <div className="flex overflow-hidden rounded-lg border border-gray-200">
-          {filterButtons.map((btn) => (
-            <button
-              key={btn.value}
-              onClick={() => setFilterType(btn.value)}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                filterType === btn.value
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              {btn.label}
-            </button>
-          ))}
+    <div style={{ padding: '38px 44px 60px', maxWidth: 1180 }}>
+      {/* Header */}
+      <div style={{ marginBottom: 26 }}>
+        <div style={{ ...mono, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#34d399', marginBottom: 8 }}>
+          Analisi
         </div>
-
-        <label className="cursor-pointer flex items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            checked={onlyAlerts}
-            onChange={(e) => setOnlyAlerts(e.target.checked)}
-            className="rounded"
-          />
-          Solo alert
-        </label>
-
+        <div style={{ ...head, fontWeight: 600, fontSize: 32, letterSpacing: '-0.02em', color: '#eef2f6' }}>
+          Meeting
+        </div>
         {!loading && (
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-            {meetings.length} meeting trovati
-          </span>
+          <div style={{ fontSize: 14, color: '#8b95a4', marginTop: 6 }}>
+            {all.length} riunioni analizzate · filtra per individuare gli sprechi
+          </div>
         )}
       </div>
 
-      {loading && <p className="text-gray-500">Caricamento...</p>}
-      {!loading && isUsingMock && <p className="mb-3 text-amber-700">{error}</p>}
-      {!loading && !isUsingMock && error && <p className="text-red-600">{error}</p>}
-      {!loading && <MeetingList meetings={meetings} />}
+      {isUsingMock && (
+        <p style={{ ...mono, marginBottom: 16, fontSize: 12, color: '#d97706' }}>
+          ⚠ Backend non raggiungibile: dati mock
+        </p>
+      )}
+
+      {/* Filter chips */}
+      {!loading && (
+        <div style={{ display: 'flex', gap: 10, marginBottom: 22, flexWrap: 'wrap' }}>
+          {FILTERS.map(f => {
+            const active = filterKey === f.key;
+            return (
+              <button
+                key={f.key}
+                onClick={() => setFilterKey(f.key)}
+                style={{
+                  padding: '8px 16px', borderRadius: 999, cursor: 'pointer',
+                  fontSize: 13, fontWeight: 600,
+                  border: `1px solid ${active ? 'rgba(52,211,153,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                  color: active ? '#6ee7b7' : '#9aa4b2',
+                  background: active ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.02)',
+                  transition: 'all .14s',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {f.label} · {counts[f.key]}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {loading && <p style={{ ...mono, fontSize: 13, color: '#5a6472' }}>Caricamento...</p>}
+      {!loading && <MeetingList meetings={filtered} />}
     </div>
   );
 }
