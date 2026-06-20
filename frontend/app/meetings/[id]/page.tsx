@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getMeetingById } from '@/lib/api';
+import { getMockMeetingById } from '@/lib/mocks';
 import type { MeetingDetail } from '@/types';
 import ScoreBadge from '@/components/ScoreBadge';
 
@@ -10,6 +11,7 @@ export default function MeetingDetailPage({ params }: { params: Promise<{ id: st
   const [meeting, setMeeting] = useState<MeetingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isUsingMock, setIsUsingMock] = useState(false);
   const [id, setId] = useState<string>('');
 
   useEffect(() => {
@@ -18,18 +20,30 @@ export default function MeetingDetailPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => {
     if (!id) return;
+    setError('');
+    setIsUsingMock(false);
     getMeetingById(id)
       .then(setMeeting)
-      .catch(() => setError('Errore nel caricamento del meeting.'))
+      .catch(() => {
+        const fallback = getMockMeetingById(id);
+        if (fallback) {
+          setMeeting(fallback);
+          setIsUsingMock(true);
+          setError('Backend non raggiungibile: visualizzo dati mock.');
+        } else {
+          setError('Meeting non trovato.');
+        }
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) return <p className="text-gray-500">Caricamento...</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
+  if (error && !meeting) return <p className="text-red-600">{error}</p>;
   if (!meeting) return null;
 
   return (
     <div className="space-y-6">
+      {isUsingMock && <p className="text-amber-700">{error}</p>}
       <button
         onClick={() => router.push('/meetings')}
         className="text-sm text-blue-600 hover:underline"

@@ -3,27 +3,33 @@
 import { useEffect, useState } from 'react';
 import KpiCard from '@/components/KpiCard';
 import { getDashboard } from '@/lib/api';
+import { mockDashboardKpis } from '@/lib/mocks';
 import type { DashboardKpis } from '@/types';
 
 export default function DashboardPage() {
   const [kpis, setKpis] = useState<DashboardKpis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isUsingMock, setIsUsingMock] = useState(false);
 
   useEffect(() => {
     getDashboard()
       .then(setKpis)
-      .catch(() => setError('Errore nel caricamento dei dati.'))
+      .catch(() => {
+        setKpis(mockDashboardKpis);
+        setIsUsingMock(true);
+        setError('Backend non raggiungibile: visualizzo dati mock.');
+      })
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <p className="text-gray-500">Caricamento...</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
   if (!kpis) return null;
 
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold text-gray-800">Dashboard</h1>
+      {isUsingMock && <p className="mb-4 text-amber-700">{error}</p>}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
         <KpiCard title="Meeting totali" value={kpis.totalMeetings} />
         <KpiCard title="Waste Score medio" value={kpis.avgWasteScore.toFixed(1)} />
