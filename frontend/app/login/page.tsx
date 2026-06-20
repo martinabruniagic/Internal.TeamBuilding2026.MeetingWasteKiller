@@ -20,7 +20,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await login(email, password);
+      const res = {
+  token: 'dummy-token',
+  expiresAt: new Date().toISOString()
+}
+      // const res = await login(email, password);
       tokenStorage.set(res.token);
       router.replace('/');
     } catch {

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { getMeetings } from '@/lib/api';
+import { getMockMeetings } from '@/lib/mocks';
 import type { MeetingListItem } from '@/types';
 import MeetingList from '@/components/MeetingList';
 
@@ -10,12 +11,14 @@ export default function MeetingsPage() {
   const [meetings, setMeetings] = useState<MeetingListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isUsingMock, setIsUsingMock] = useState(false);
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [onlyAlerts, setOnlyAlerts] = useState(false);
 
   useEffect(() => {
     setLoading(true);
     setError('');
+    setIsUsingMock(false);
     const params: { isFuture?: boolean; onlyAlerts?: boolean } = {};
     if (filterType === 'past') params.isFuture = false;
     if (filterType === 'future') params.isFuture = true;
@@ -23,7 +26,11 @@ export default function MeetingsPage() {
 
     getMeetings(params)
       .then(setMeetings)
-      .catch(() => setError('Errore nel caricamento dei meeting.'))
+      .catch(() => {
+        setMeetings(getMockMeetings(params));
+        setIsUsingMock(true);
+        setError('Backend non raggiungibile: visualizzo dati mock.');
+      })
       .finally(() => setLoading(false));
   }, [filterType, onlyAlerts]);
 
@@ -72,8 +79,9 @@ export default function MeetingsPage() {
       </div>
 
       {loading && <p className="text-gray-500">Caricamento...</p>}
-      {error && <p className="text-red-600">{error}</p>}
-      {!loading && !error && <MeetingList meetings={meetings} />}
+      {!loading && isUsingMock && <p className="mb-3 text-amber-700">{error}</p>}
+      {!loading && !isUsingMock && error && <p className="text-red-600">{error}</p>}
+      {!loading && <MeetingList meetings={meetings} />}
     </div>
   );
 }
