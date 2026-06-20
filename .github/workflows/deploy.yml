@@ -47,11 +47,32 @@ jobs:
             --no-build \
             --output ./publish
 
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Build migrations bundle
+        run: |
+          dotnet ef migrations bundle \
+            --project src/Infrastructures/Internal.MeetingWasteKiller.SqlServer \
+            --startup-project src/Presentations/Internal.MeetingWasteKiller.Api \
+            --configuration Release \
+            --self-contained \
+            --runtime linux-x64 \
+            --output ./efbundle \
+            --no-build
+
       - name: Upload API artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-publish
           path: ./publish
+          retention-days: 1
+
+      - name: Upload migrations bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: efbundle
+          path: ./efbundle
           retention-days: 1
 
   # ─────────────────────────────────────────────────────────────────
@@ -101,6 +122,7 @@ jobs:
       app_service_hostname: ${{ steps.tf-out.outputs.app_service_hostname }}
       key_vault_name:       ${{ steps.tf-out.outputs.key_vault_name }}
       static_web_app_url:   ${{ steps.tf-out.outputs.static_web_app_url }}
+      sql_server_name:      ${{ steps.tf-out.outputs.sql_server_name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -173,13 +195,78 @@ jobs:
           echo "app_service_hostname=$(terraform output -raw app_service_hostname)" >> $GITHUB_OUTPUT
           echo "key_vault_name=$(terraform output -raw key_vault_name)"           >> $GITHUB_OUTPUT
           echo "static_web_app_url=$(terraform output -raw static_web_app_url)"   >> $GITHUB_OUTPUT
+          echo "sql_server_name=$(terraform output -raw sql_server_name)"         >> $GITHUB_OUTPUT
 
   # ─────────────────────────────────────────────────────────────────
-  # 4. Deploy — .NET API to Azure App Service
+  # 4. Migrate DB — apply EF Core migrations against Azure SQL
+  # Opens a temporary firewall rule for the runner IP, runs the
+  # self-contained migration bundle, then removes the rule.
+  # ─────────────────────────────────────────────────────────────────
+  migrate-db:
+    name: Apply Database Migrations
+    needs: [terraform, build-api]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download migrations bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: efbundle
+          path: ./
+
+      - name: Azure Login (Service Principal)
+        run: |
+          az login --service-principal \
+            --username "$ARM_CLIENT_ID" \
+            --password "$ARM_CLIENT_SECRET" \
+            --tenant "$ARM_TENANT_ID"
+          az account set --subscription "$ARM_SUBSCRIPTION_ID"
+        env:
+          ARM_CLIENT_ID:       ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET:   ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID:       ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Open SQL firewall for runner
+        run: |
+          RUNNER_IP=$(curl -sf https://api.ipify.org)
+          az sql server firewall-rule create \
+            --server "${{ needs.terraform.outputs.sql_server_name }}" \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --name "GitHubActionsRunner" \
+            --start-ip-address "$RUNNER_IP" \
+            --end-ip-address   "$RUNNER_IP"
+
+      - name: Read connection string from Key Vault
+        id: conn
+        run: |
+          CONN=$(az keyvault secret show \
+            --vault-name "${{ needs.terraform.outputs.key_vault_name }}" \
+            --name "sql-connection-string" \
+            --query "value" --output tsv)
+          echo "::add-mask::$CONN"
+          echo "value=$CONN" >> $GITHUB_OUTPUT
+
+      - name: Run migrations
+        run: |
+          chmod +x ./efbundle
+          ./efbundle --connection "${{ steps.conn.outputs.value }}"
+
+      - name: Remove SQL firewall rule
+        if: always()
+        run: |
+          az sql server firewall-rule delete \
+            --server "${{ needs.terraform.outputs.sql_server_name }}" \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --name "GitHubActionsRunner" \
+            --yes
+
+  # ─────────────────────────────────────────────────────────────────
+  # 5. Deploy — .NET API to Azure App Service
   # ─────────────────────────────────────────────────────────────────
   deploy-api:
     name: Deploy API
-    needs: [terraform]
+    needs: [terraform, migrate-db]
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -214,7 +301,7 @@ jobs:
             --async false
 
   # ─────────────────────────────────────────────────────────────────
-  # 5. Deploy — Next.js Frontend to Azure Static Web App
+  # 6. Deploy — Next.js Frontend to Azure Static Web App
   # Reads the SWA deployment token from Key Vault (never from a stored secret).
   # Passes NEXT_PUBLIC_API_URL as a build-time env var so it is baked into the bundle.
   # ─────────────────────────────────────────────────────────────────

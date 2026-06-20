@@ -37,9 +37,6 @@ resource "azurerm_linux_web_app" "api" {
     "WasteScore__AlertThreshold" = "60"
     # CORS — allowed origin for the ASP.NET Core middleware
     "Cors__AllowedOrigins__0" = "https://${azurerm_static_web_app.swa.default_host_name}"
-    # CORS via app setting — avoids azurerm provider bug with computed values in cors blocks
-    "WEBSITE_CORS_ALLOWED_ORIGINS"     = "https://${azurerm_static_web_app.swa.default_host_name}"
-    "WEBSITE_CORS_SUPPORT_CREDENTIALS" = "false"
     # Sensitive values resolved at runtime via Key Vault references — never stored in plain text
     "Jwt__Key" = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=jwt-key)"
   }

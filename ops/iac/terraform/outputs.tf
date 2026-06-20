@@ -28,6 +28,11 @@ output "sql_server_fqdn" {
   description = "Fully-qualified domain name of the Azure SQL Server"
 }
 
+output "sql_server_name" {
+  value       = azurerm_mssql_server.sql.name
+  description = "Azure SQL Server resource name — used by CI to open/close the migration firewall rule"
+}
+
 output "app_service_principal_id" {
   value       = azurerm_linux_web_app.api.identity[0].principal_id
   description = "Object ID of the App Service System-Assigned Managed Identity"
