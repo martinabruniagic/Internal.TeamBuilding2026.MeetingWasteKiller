@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Manrope, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import AuthGuard from '@/components/AuthGuard';
-import NavbarWrapper from '@/components/NavbarWrapper';
+import AppShell from '@/components/AppShell';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const manrope = Manrope({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-heading', display: 'swap' });
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
 
 export const metadata: Metadata = {
   title: 'MeetingWasteKiller',
@@ -14,12 +16,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it" className="dark" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${manrope.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <AuthGuard>
-          <NavbarWrapper />
-          <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
+          <AppShell>{children}</AppShell>
         </AuthGuard>
       </body>
     </html>
   );
 }
+
