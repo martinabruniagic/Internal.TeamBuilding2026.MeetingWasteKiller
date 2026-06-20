@@ -107,7 +107,7 @@
 - Prezzi basati su **listino Azure pubblico West Europe** (giugno 2026)
 - Non include IVA
 - Non include costi di licenza Microsoft 365 (già presenti nel cliente target)
-- Azure OpenAI: disponibile solo in regioni specifiche — verificare disponibilità nel tenant cliente
+- Azure AI Foundry: disponibile solo in regioni specifiche — verificare disponibilità del deployment GPT-4o nel tenant cliente
 - PostgreSQL Flexible Server: costo dominante nella fascia Medium/Large — valutare tier Burstable per PoC/small
 - Per deployment multi-tenant SaaS (v2.0): aggiungere replica PostgreSQL e rivedere architettura DB
 
