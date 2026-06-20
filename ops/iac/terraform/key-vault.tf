@@ -21,6 +21,12 @@ resource "azurerm_role_assignment" "kv_admin_current" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
+# Azure RBAC propagation can take up to 5 minutes — wait before writing secrets
+resource "time_sleep" "kv_rbac_propagation" {
+  create_duration = "90s"
+  depends_on      = [azurerm_role_assignment.kv_admin_current]
+}
+
 # App Service Managed Identity gets read-only access to secrets
 resource "azurerm_role_assignment" "kv_secrets_app_service" {
   scope                            = azurerm_key_vault.kv.id
@@ -46,7 +52,7 @@ resource "azurerm_key_vault_secret" "sql_connection_string" {
   ])
 
   # Wait for RBAC propagation before writing secrets
-  depends_on = [azurerm_role_assignment.kv_admin_current]
+  depends_on = [time_sleep.kv_rbac_propagation]
 
   tags = local.common_tags
 }
@@ -57,7 +63,7 @@ resource "azurerm_key_vault_secret" "jwt_key" {
   key_vault_id = azurerm_key_vault.kv.id
   value        = var.jwt_key
 
-  depends_on = [azurerm_role_assignment.kv_admin_current]
+  depends_on = [time_sleep.kv_rbac_propagation]
 
   tags = local.common_tags
 }
@@ -68,7 +74,7 @@ resource "azurerm_key_vault_secret" "swa_deployment_token" {
   key_vault_id = azurerm_key_vault.kv.id
   value        = azurerm_static_web_app.swa.api_key
 
-  depends_on = [azurerm_role_assignment.kv_admin_current]
+  depends_on = [time_sleep.kv_rbac_propagation]
 
   tags = local.common_tags
 }

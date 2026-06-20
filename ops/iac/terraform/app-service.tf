@@ -50,4 +50,13 @@ resource "azurerm_linux_web_app" "api" {
   }
 
   tags = local.common_tags
+
+  # Ensure KV secrets exist before the App Service is created/updated,
+  # so KV references resolve immediately on first startup.
+  # NOTE: kv_secrets_app_service is intentionally NOT listed here to avoid
+  # a circular dependency (it depends on this resource's MI principal_id).
+  depends_on = [
+    azurerm_key_vault_secret.sql_connection_string,
+    azurerm_key_vault_secret.jwt_key,
+  ]
 }

@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.12"
+    }
   }
 }
 
@@ -18,9 +22,5 @@ provider "azurerm" {
     }
   }
   subscription_id = var.subscription_id
-  # Auth: az login (local) or ARM_USE_OIDC=true + ARM_CLIENT_ID/TENANT_ID/SUBSCRIPTION_ID (CI)
-}
-
-provider "azuread" {
-  # Inherits tenant from azurerm; no extra config needed for OIDC
+  # Auth: az login (local) or ARM_CLIENT_ID/SECRET/TENANT_ID/SUBSCRIPTION_ID (CI)
 }
