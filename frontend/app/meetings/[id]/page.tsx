@@ -59,11 +59,11 @@ export default function MeetingDetailPage({ params }: { params: Promise<{ id: st
         Tutti i meeting
       </button>
 
-      {isUsingMock && (
+      {/* {isUsingMock && (
         <p style={{ ...mono, marginBottom: 16, fontSize: 12, color: '#d97706' }}>
           ⚠ Backend non raggiungibile: dati mock
         </p>
-      )}
+      )} */}
 
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
