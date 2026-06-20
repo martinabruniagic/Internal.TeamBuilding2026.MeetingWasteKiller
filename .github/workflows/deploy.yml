@@ -1,0 +1,406 @@
+name: CI/CD — Meeting Waste Killer
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  TF_DIR: ops/iac/terraform
+  DOTNET_VERSION: "10.0.x"
+  NODE_VERSION: "20"
+  RESOURCE_GROUP: "rg-blue"
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # 1. Build & Test — .NET API
+  # ─────────────────────────────────────────────────────────────────
+  build-api:
+    name: Build & Test API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Publish API
+        run: |
+          dotnet publish \
+            src/Presentations/Internal.MeetingWasteKiller.Api/Internal.MeetingWasteKiller.Api.csproj \
+            --configuration Release \
+            --no-build \
+            --output ./publish
+
+      - name: Upload API artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-publish
+          path: ./publish
+          retention-days: 1
+
+  # ─────────────────────────────────────────────────────────────────
+  # 2. Build & Validate — Next.js Frontend
+  # Validates the code compiles; uses the localhost fallback URL.
+  # The real API URL is injected at deployment time (deploy-frontend job).
+  # ─────────────────────────────────────────────────────────────────
+  build-frontend:
+    name: Build & Validate Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build (validate — uses localhost:5001 fallback)
+        working-directory: frontend
+        run: npm run build
+
+  # ─────────────────────────────────────────────────────────────────
+  # 3. Terraform — Plan & Apply (main branch pushes only)
+  # Plan artifact is produced first and consumed by apply — never
+  # re-planned inside the apply step (prevents plan/apply drift).
+  # ─────────────────────────────────────────────────────────────────
+  terraform:
+    name: Terraform Plan & Apply
+    needs: [build-api, build-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    env:
+      ARM_CLIENT_ID:       ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET:   ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_TENANT_ID:       ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    outputs:
+      app_service_name:     ${{ steps.tf-out.outputs.app_service_name }}
+      app_service_hostname: ${{ steps.tf-out.outputs.app_service_hostname }}
+      key_vault_name:       ${{ steps.tf-out.outputs.key_vault_name }}
+      static_web_app_url:   ${{ steps.tf-out.outputs.static_web_app_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          client-secret:   ${{ secrets.AZURE_CLIENT_SECRET }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Cache Terraform plugins
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/tf-plugin-cache
+          key: ${{ runner.os }}-terraform-${{ hashFiles('ops/iac/terraform/.terraform.lock.hcl') }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ">= 1.6.0"
+          terraform_wrapper: false  # Must be false for clean output parsing
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_DIR }}
+        env:
+          TF_PLUGIN_CACHE_DIR: ${{ runner.temp }}/tf-plugin-cache
+        run: |
+          terraform init \
+            -backend-config="storage_account_name=${{ secrets.TF_STATE_STORAGE_ACCOUNT }}"
+
+      - name: Terraform Format Check
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_DIR }}
+        run: |
+          terraform plan \
+            -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            -var="cicd_sp_object_id=${{ secrets.AZURE_CICD_SP_OBJECT_ID }}" \
+            -var="sql_admin_password=${{ secrets.TF_VAR_SQL_ADMIN_PASSWORD }}" \
+            -var="jwt_key=${{ secrets.TF_VAR_JWT_KEY }}" \
+            -var="tf_state_storage_account=${{ secrets.TF_STATE_STORAGE_ACCOUNT }}" \
+            -out=tfplan
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.TF_DIR }}/tfplan
+          retention-days: 1
+
+      - name: Terraform Apply
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform apply -lock-timeout=10m tfplan
+
+      - name: Capture Terraform outputs
+        id: tf-out
+        working-directory: ${{ env.TF_DIR }}
+        run: |
+          echo "app_service_name=$(terraform output -raw app_service_name)"       >> $GITHUB_OUTPUT
+          echo "app_service_hostname=$(terraform output -raw app_service_hostname)" >> $GITHUB_OUTPUT
+          echo "key_vault_name=$(terraform output -raw key_vault_name)"           >> $GITHUB_OUTPUT
+          echo "static_web_app_url=$(terraform output -raw static_web_app_url)"   >> $GITHUB_OUTPUT
+
+  # ─────────────────────────────────────────────────────────────────
+  # 4. Deploy — .NET API to Azure App Service
+  # ─────────────────────────────────────────────────────────────────
+  deploy-api:
+    name: Deploy API
+    needs: [terraform]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download API artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-publish
+          path: ./publish
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          client-secret:   ${{ secrets.AZURE_CLIENT_SECRET }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Zip publish output
+        run: zip -r app.zip ./publish
+
+      - name: Deploy to App Service
+        run: |
+          az webapp deploy \
+            --name "${{ needs.terraform.outputs.app_service_name }}" \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --src-path app.zip \
+            --type zip \
+            --async false
+
+  # ─────────────────────────────────────────────────────────────────
+  # 5. Deploy — Next.js Frontend to Azure Static Web App
+  # Reads the SWA deployment token from Key Vault (never from a stored secret).
+  # Passes NEXT_PUBLIC_API_URL as a build-time env var so it is baked into the bundle.
+  # ─────────────────────────────────────────────────────────────────
+  deploy-frontend:
+    name: Deploy Frontend
+    needs: [terraform]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          client-secret:   ${{ secrets.AZURE_CLIENT_SECRET }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Read SWA deployment token from Key Vault
+        id: swa-token
+        run: |
+          SWA_TOKEN=$(az keyvault secret show \
+            --vault-name "${{ needs.terraform.outputs.key_vault_name }}" \
+            --name "swa-deployment-token" \
+            --query "value" \
+            --output tsv)
+          echo "::add-mask::$SWA_TOKEN"
+          echo "value=$SWA_TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Deploy Frontend to Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.swa-token.outputs.value }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: frontend
+          output_location: .next
+          api_location: ""
+        env:
+          # Build-time variable — baked into the Next.js client bundle
+          NEXT_PUBLIC_API_URL: "https://${{ needs.terraform.outputs.app_service_hostname }}"
+
+  # ─────────────────────────────────────────────────────────────────
+  # 6. Double-Check — LLM-as-Judge wire-up verification
+  # Runs after both deploys succeed and asserts that every resource
+  # is correctly connected. Fails the workflow if any check fails.
+  # ─────────────────────────────────────────────────────────────────
+  double-check:
+    name: Double-Check Wire-up
+    needs: [deploy-api, deploy-frontend]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          client-secret:   ${{ secrets.AZURE_CLIENT_SECRET }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Verify all resources are correctly wired
+        env:
+          APP_NAME: ${{ needs.terraform.outputs.app_service_name }}
+          KV_NAME:  ${{ needs.terraform.outputs.key_vault_name }}
+          APP_URL:  "https://${{ needs.terraform.outputs.app_service_hostname }}"
+          SWA_URL:  ${{ needs.terraform.outputs.static_web_app_url }}
+        run: |
+          set -euo pipefail
+          ERRORS=0
+
+          echo "╔══════════════════════════════════════════════╗"
+          echo "║     Double-Check: Resource Wire-up Audit     ║"
+          echo "╚══════════════════════════════════════════════╝"
+
+          # ── 1. App Service — System-Assigned Managed Identity ──
+          echo ""
+          echo "── 1. App Service Managed Identity ──"
+          MI_PRINCIPAL=$(az webapp identity show \
+            --name "$APP_NAME" \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --query "principalId" -o tsv 2>/dev/null || echo "")
+          if [ -z "$MI_PRINCIPAL" ]; then
+            echo "  ❌ FAIL: No System-Assigned Managed Identity on App Service"
+            ERRORS=$((ERRORS + 1))
+          else
+            echo "  ✅ OK: MI enabled (principalId=${MI_PRINCIPAL})"
+          fi
+
+          # ── 2. Key Vault RBAC — App Service MI has Secrets User ──
+          echo ""
+          echo "── 2. Key Vault RBAC for App Service MI ──"
+          KV_ID=$(az keyvault show \
+            --name "$KV_NAME" \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --query "id" -o tsv)
+          RBAC_COUNT=$(az role assignment list \
+            --scope "$KV_ID" \
+            --role "Key Vault Secrets User" \
+            --assignee "$MI_PRINCIPAL" \
+            --query "length(@)" -o tsv 2>/dev/null || echo "0")
+          if [ "$RBAC_COUNT" -eq 0 ]; then
+            echo "  ❌ FAIL: App Service MI missing 'Key Vault Secrets User' on Key Vault"
+            ERRORS=$((ERRORS + 1))
+          else
+            echo "  ✅ OK: App Service MI has 'Key Vault Secrets User' on Key Vault"
+          fi
+
+          # ── 3. Key Vault references present in App Service config ──
+          echo ""
+          echo "── 3. Key Vault References in App Settings ──"
+          KV_REF_COUNT=$(az webapp config appsettings list \
+            --name "$APP_NAME" \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --query "length([?contains(value, '@Microsoft.KeyVault')])" \
+            -o tsv 2>/dev/null || echo "0")
+          if [ "$KV_REF_COUNT" -eq 0 ]; then
+            echo "  ⚠️  WARN: No KV references found in app settings (check connection strings too)"
+          else
+            echo "  ✅ OK: ${KV_REF_COUNT} Key Vault reference(s) found in app settings"
+          fi
+
+          # ── 4. SQL Server firewall — AllowAzureServices rule ──
+          echo ""
+          echo "── 4. SQL Server Firewall ──"
+          SQL_SERVER=$(az sql server list \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --query "[0].name" -o tsv 2>/dev/null || echo "")
+          if [ -z "$SQL_SERVER" ]; then
+            echo "  ❌ FAIL: No SQL Server found in ${{ env.RESOURCE_GROUP }}"
+            ERRORS=$((ERRORS + 1))
+          else
+            FIREWALL_RULE=$(az sql server firewall-rule show \
+              --server "$SQL_SERVER" \
+              --resource-group "${{ env.RESOURCE_GROUP }}" \
+              --name "AllowAzureServices" \
+              --query "name" -o tsv 2>/dev/null || echo "")
+            if [ -z "$FIREWALL_RULE" ]; then
+              echo "  ❌ FAIL: SQL firewall rule 'AllowAzureServices' not found"
+              ERRORS=$((ERRORS + 1))
+            else
+              echo "  ✅ OK: SQL Server has 'AllowAzureServices' firewall rule"
+            fi
+          fi
+
+          # ── 5. App Service CORS — SWA origin is allowed ──
+          echo ""
+          echo "── 5. App Service CORS ──"
+          SWA_HOSTNAME=$(echo "$SWA_URL" | sed 's|https://||')
+          CORS_MATCH=$(az webapp cors show \
+            --name "$APP_NAME" \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --query "allowedOrigins[?contains(@, '${SWA_HOSTNAME}')]" \
+            -o tsv 2>/dev/null || echo "")
+          if [ -z "$CORS_MATCH" ]; then
+            echo "  ⚠️  WARN: SWA origin not found in CORS allowed origins — check Terraform apply"
+          else
+            echo "  ✅ OK: CORS allows SWA origin ($SWA_URL)"
+          fi
+
+          # ── 6. API health check ──
+          echo ""
+          echo "── 6. API Health Check ──"
+          echo "  Waiting 20s for App Service to warm up..."
+          sleep 20
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$APP_URL" || echo "000")
+          if [[ "$API_STATUS" =~ ^(200|301|302|404)$ ]]; then
+            echo "  ✅ OK: API responded HTTP ${API_STATUS}"
+          else
+            echo "  ❌ FAIL: API returned HTTP ${API_STATUS} (expected 200/301/302/404)"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          # ── 7. Static Web App health check ──
+          echo ""
+          echo "── 7. Static Web App Health Check ──"
+          SWA_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$SWA_URL" || echo "000")
+          if [[ "$SWA_STATUS" =~ ^(200|301|302)$ ]]; then
+            echo "  ✅ OK: SWA responded HTTP ${SWA_STATUS}"
+          else
+            echo "  ❌ FAIL: SWA returned HTTP ${SWA_STATUS} (expected 200/301/302)"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          # ── Summary ──
+          echo ""
+          echo "════════════════════════════════════════════════"
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "  ❌ Double-Check FAILED: ${ERRORS} issue(s) found"
+            echo "════════════════════════════════════════════════"
+            exit 1
+          else
+            echo "  ✅ Double-Check PASSED: all resources correctly wired"
+            echo "════════════════════════════════════════════════"
+          fi

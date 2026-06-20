@@ -7,7 +7,7 @@
 | **Versione** | 1.1 |
 | **Data** | Giugno 2026 |
 | **Stato** | Operativo per demo |
-| **Fonte di verità** | `docs/plans/be-bootstrap.md` |
+| **Fonte di verità** | `docs/plans/be-bootstrap.md` (backend) · `docs/plans/fe-bootstrap.md` (frontend) |
 
 ---
 

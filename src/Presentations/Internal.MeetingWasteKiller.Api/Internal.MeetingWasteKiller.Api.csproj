@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Internal.MeetingWasteKiller.Api</RootNamespace>
+    <AssemblyName>Internal.MeetingWasteKiller.Api</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.*" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Businesses\Internal.MeetingWasteKiller.Business\Internal.MeetingWasteKiller.Business.csproj" />
+    <ProjectReference Include="..\..\Infrastructures\Internal.MeetingWasteKiller.SqlServer\Internal.MeetingWasteKiller.SqlServer.csproj" />
+  </ItemGroup>
+
+</Project>
