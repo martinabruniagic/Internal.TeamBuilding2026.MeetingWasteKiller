@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -60,10 +61,13 @@ export default function Sidebar() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M5 15L15 5" stroke="#06281d" strokeWidth="2.4" strokeLinecap="round" />
-            <circle cx="6.5" cy="6.5" r="2.2" stroke="#06281d" strokeWidth="2" />
-          </svg>
+          <Image
+            src="/meeting-waste-killer-logo-black.png"
+            alt="Meeting Waste Killer logo"
+            width={22}
+            height={22}
+            style={{ mixBlendMode: 'multiply' }}
+          />
         </div>
         <div style={{ lineHeight: 1.1 }}>
           <div style={{ ...heading, fontWeight: 700, fontSize: 14, color: '#eef2f6' }}>Meeting Waste Killer</div>
